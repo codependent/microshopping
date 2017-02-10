@@ -19,6 +19,7 @@
 	<description>Demo project for Spring Boot</description>
 
 	<properties>
+		<spring-kafka.version>1.0.4.RELEASE</spring-kafka.version>
 		<orika.version>1.5.0</orika.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>

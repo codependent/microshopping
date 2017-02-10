@@ -16,16 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.codependent.microshopping.order.dto.Order;
 import com.codependent.microshopping.order.dto.Order.State;
 import com.codependent.microshopping.order.service.OrderService;
-import com.codependent.microshopping.order.stream.OrderSource;
+import com.codependent.microshopping.order.stream.OrderProcessor;
 
 @RestController
 @RequestMapping("/api/v1/orders")
 public class OrdersRestController {
 
 	private Logger logger = LoggerFactory.getLogger(getClass());
-	
-	@Autowired
-	private OrderSource orderSource;
 	
 	@Autowired
 	private OrderService orderService;
@@ -39,11 +36,6 @@ public class OrdersRestController {
 	public Order createOrder(@RequestBody Order order){
 		logger.debug("createOrder()");
 		order = orderService.createOrder(order);
-		try{
-			orderSource.output().send(MessageBuilder.withPayload(order).build(), 500);
-		}catch(Exception e){
-			logger.error("{}", e);
-		}
 		return order;
 	}
 }

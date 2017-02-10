@@ -1,21 +1,20 @@
 package com.codependent.microshopping.shipping.stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.cloud.stream.annotation.StreamListener;
-import org.springframework.stereotype.Component;
+import org.springframework.cloud.stream.annotation.Input;
+import org.springframework.cloud.stream.annotation.Output;
+import org.springframework.messaging.MessageChannel;
 
-import com.codependent.microshopping.stream.dto.Order;
+import com.codependent.microshopping.stream.Topic;
 
-@Component
-public class OrderProcessor {
-
-	private Logger logger = LoggerFactory.getLogger(getClass());
-
-	@StreamListener(OrderSource.INPUT)
-	public void handle(Order order){
-		logger.info("received shipping request");
-		//TODO Do ship
-	}
+public interface OrderProcessor{
+	
+	final String INPUT 	= Topic.SHIPPING_REQUESTS;
+	final String OUTPUT = Topic.SHIPPING_RESULTS;
+	
+	@Input(OrderProcessor.INPUT)
+	MessageChannel input();
+	
+	@Output(OrderProcessor.OUTPUT)
+	MessageChannel output();
 	
 }

@@ -7,7 +7,7 @@ public class Order implements Serializable{
 	private static final long serialVersionUID = -861134353502544185L;
 	
 	public enum State {
-		PENDING, PAYED, SHIPPED, COMPLETED, CANCELLED;
+		PENDING, PAYED, SHIPPED, COMPLETED, CANCELLED_PAYMENT_FAILED, CANCELLED_SERVICE_DOWN;
 	}
 	
 	private Integer id;
