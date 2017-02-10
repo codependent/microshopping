@@ -27,7 +27,7 @@ public class MessagingServiceListener {
 		List<Message> pending = messagingService.getMessages("PENDING");
 		logger.info("[{}] pending messages", pending.size());
 		for (Message message : pending) {
-			messageSender.sendMessage(message);
+			messageSender.send(message, 500);
 		}
 	}
 	

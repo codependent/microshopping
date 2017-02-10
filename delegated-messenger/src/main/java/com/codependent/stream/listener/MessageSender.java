@@ -4,6 +4,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
@@ -17,6 +19,8 @@ import com.codependent.stream.service.MessagingService;
 @Component
 public class MessageSender {
 
+	private Logger logger = LoggerFactory.getLogger(getClass());
+	
 	@Autowired
 	private KafkaTemplate<Integer, String> kafkaTemplate;
 	
@@ -25,13 +29,14 @@ public class MessageSender {
 	
 	@SuppressWarnings("unused")
 	@Async
-	public void sendMessage(Message message){
+	public void send(Message message, int timeout){
 		ListenableFuture<SendResult<Integer, String>> delivery = kafkaTemplate.send(message.getTopic(), message.getMessage());
 		try {
-			SendResult<Integer, String> result = delivery.get(500, TimeUnit.MILLISECONDS);
+			logger.info("Sending message to topic {} - id {} - content {}", message.getTopic(), message.getId(), message.getMessage());
+			SendResult<Integer, String> result = delivery.get(timeout, TimeUnit.MILLISECONDS);
 			messagingService.removeMessage(message.getId());
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {
-			e.printStackTrace();
+			logger.error("Error sending message to topic {} - id {} - content {} - error: {}", message.getTopic(), message.getId(), message.getMessage(), e);
 		}
 	}
 }
