@@ -24,7 +24,8 @@ spring:
             producer:
               sync: true
       bindings:
-        ordersIn: 
+        ordersIn:
+          group: order-service 
           destination: orders
         ordersOut: 
           destination: orders

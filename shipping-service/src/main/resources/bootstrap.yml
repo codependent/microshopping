@@ -25,6 +25,7 @@ spring:
               sync: true
       bindings:
         ordersIn: 
+          group: shipping-service 
           destination: orders
         ordersOut: 
           destination: orders

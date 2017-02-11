@@ -38,6 +38,7 @@ public class OrderListener{
 			break;
 		case SHIPPED:
 			logger.info("received shipping information [{}]", order);
+			order.setState(State.COMPLETED);
 			orderService.updateOrder(mapper.map(order, com.codependent.microshopping.order.dto.Order.class));
 			break;
 		}
