@@ -1,2 +1,2 @@
 # microshopping
-Spring Cloud project that implements Event Sourcing to manage distributed transactions
+Spring Cloud project that implements eventual consistency to manage distributed transactions
