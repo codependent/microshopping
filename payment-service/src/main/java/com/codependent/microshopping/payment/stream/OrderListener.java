@@ -18,22 +18,26 @@ public class OrderListener {
 	@Autowired
 	private OrderProcessor orderSource;
 	
+	@SuppressWarnings("incomplete-switch")
 	@StreamListener(OrderProcessor.INPUT)
 	public void handle(Order order){
-		logger.info("received order [{}], processing payment", order);
-		processPayment(order);
+		switch(order.getState()){
+		case PENDING_PAYMENT:
+			logger.info("received order [{}], processing payment", order);
+			processPayment(order);
+			break;
+		}
 	}
 	
 	private void processPayment(Order order){
 		if(doPay(order)){
 			logger.info("Payment processed succesfully for order [{}], notifying order service and proceeding with shipping", order);
 			order.setState(State.PAYED);
-			orderSource.outputPayment().send(MessageBuilder.withPayload(order).build());
-			orderSource.outputShipping().send(MessageBuilder.withPayload(order).build());
+			orderSource.output().send(MessageBuilder.withPayload(order).build());
 		}else{
 			logger.info("Payment failed for order [{}], cancelling order", order);
 			order.setState(State.CANCELLED_PAYMENT_FAILED);
-			orderSource.outputPayment().send(MessageBuilder.withPayload(order).build());
+			orderSource.output().send(MessageBuilder.withPayload(order).build());
 		}
 	}
 	

@@ -18,16 +18,22 @@ public class OrderListener {
 	@Autowired
 	private OrderProcessor orderProcessor;
 	
+	@SuppressWarnings("incomplete-switch")
 	@StreamListener(OrderProcessor.INPUT)
 	public void handle(Order order){
-		logger.info("received shipping request for order [{}]", order);
-		//TODO Do ship
-		try{
+		switch(order.getState()){
+		case PENDING_SHIPPING:
+			logger.info("received shipping request for order [{}]", order);
+			//TODO Ask for shipping
 			order.setState(State.SHIPPED);
-			orderProcessor.output().send(MessageBuilder.withPayload(order).build(), 500);
-		}catch(Exception e){
-			logger.error("{}", e);
+			try{
+				orderProcessor.output().send(MessageBuilder.withPayload(order).build(), 500);
+			}catch(Exception e){
+				logger.error("{}", e);
+			}
+			break;
 		}
+		
 	}
 	
 }

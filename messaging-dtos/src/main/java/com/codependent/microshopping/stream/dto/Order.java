@@ -5,7 +5,7 @@ import java.io.Serializable;
 public class Order implements Serializable{
 
 	public enum State {
-		PENDING, PAYED, SHIPPED, COMPLETED, CANCELLED_PAYMENT_FAILED, CANCELLED_SERVICE_DOWN;
+		PENDING_PAYMENT, PAYED, PENDING_SHIPPING, SHIPPED, COMPLETED, CANCELLED_PAYMENT_FAILED, CANCELLED_SERVICE_DOWN;
 	}
 	
 	private static final long serialVersionUID = -8611420025441863685L;

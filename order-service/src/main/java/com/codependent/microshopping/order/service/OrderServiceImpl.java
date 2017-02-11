@@ -16,7 +16,7 @@ import com.codependent.microshopping.order.entity.OrderEntity;
 import com.codependent.microshopping.order.repository.OrderDao;
 import com.codependent.microshopping.order.stream.OrderProcessor;
 import com.codependent.microshopping.order.utils.OrikaObjectMapper;
-import com.codependent.microshopping.stream.Topic;
+import com.codependent.microshopping.stream.Channel;
 import com.codependent.stream.service.MessagingService;
 
 @Service
@@ -41,14 +41,15 @@ public class OrderServiceImpl implements OrderService{
 	@Override
 	public Order createOrder(Order order) {
 		OrderEntity orderEntity = mapper.map(order, OrderEntity.class);
-		order.setState(State.PENDING);
+		orderEntity.setState(State.PENDING_PAYMENT);
 		orderEntity = orderDao.save(orderEntity);
-		/*try{
+		/*
+		try{
 			orderProcessor.output().send(MessageBuilder.withPayload(mapper.map(orderEntity, com.codependent.microshopping.stream.dto.Order.class)).build(), 500);
 		}catch(Exception e){
 			logger.error("{}", e);
 		}*/
-		messagingService.createPendingMessage(Topic.PAYMENT_REQUESTS, mapper.map(orderEntity, com.codependent.microshopping.stream.dto.Order.class));
+		messagingService.createPendingMessage("orders", mapper.map(orderEntity, com.codependent.microshopping.stream.dto.Order.class));
 		return mapper.map(orderEntity, Order.class);
 	}
 

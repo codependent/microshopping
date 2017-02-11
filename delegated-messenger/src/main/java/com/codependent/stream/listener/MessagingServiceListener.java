@@ -22,9 +22,9 @@ public class MessagingServiceListener {
 	@Autowired
 	private MessageSender messageSender;
 	
-	@Scheduled(fixedDelay=30000)
+	@Scheduled(fixedDelay=5000)
 	public void checkMessages(){
-		List<Message> pending = messagingService.getMessages("PENDING");
+		List<Message> pending = messagingService.getMessages("PENDING_PAYMENT");
 		logger.info("[{}] pending messages", pending.size());
 		for (Message message : pending) {
 			messageSender.send(message, 500);

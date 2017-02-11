@@ -20,9 +20,14 @@ spring:
           zk-nodes:
           - kafka
         bindings:
-          paymentRequests:
+          ordersOut:
             producer:
               sync: true
+      bindings:
+        ordersIn: 
+          destination: orders
+        ordersOut: 
+          destination: orders
         
 server:
   port: 8282

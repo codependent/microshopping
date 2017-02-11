@@ -4,20 +4,17 @@ import org.springframework.cloud.stream.annotation.Input;
 import org.springframework.cloud.stream.annotation.Output;
 import org.springframework.messaging.MessageChannel;
 
-import com.codependent.microshopping.stream.Topic;
+import com.codependent.microshopping.stream.Channel;
 
 public interface OrderProcessor{
 	
-	final String INPUT 				= Topic.PAYMENT_REQUESTS;
-	final String OUTPUT_PAYMENT 	= Topic.PAYMENT_RESULTS;
-	final String OUTPUT_SHIPPING 	= Topic.SHIPPING_REQUESTS;
+	final String INPUT 		= Channel.ORDERS_IN;
+	final String OUTPUT 	= Channel.ORDERS_OUT;
 	
 	@Input(INPUT)
 	MessageChannel input();
 	
-	@Output(OUTPUT_PAYMENT)
-	MessageChannel outputPayment();
+	@Output(OUTPUT)
+	MessageChannel output();
 	
-	@Output(OUTPUT_SHIPPING)
-	MessageChannel outputShipping();
 }

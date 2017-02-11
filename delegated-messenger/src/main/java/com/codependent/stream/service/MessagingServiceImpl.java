@@ -27,7 +27,7 @@ public class MessagingServiceImpl implements MessagingService{
 		try {
 			String text = jacksonConverter.getObjectMapper().writeValueAsString(message);
 			Message messageEntity = new Message();
-			messageEntity.setState("PENDING");
+			messageEntity.setState("PENDING_PAYMENT");
 			messageEntity.setTopic(topic);
 			messageEntity.setMessage(text);
 			messageDao.save(messageEntity);

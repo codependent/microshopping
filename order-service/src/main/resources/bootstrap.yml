@@ -20,9 +20,14 @@ spring:
           zk-nodes:
           - kafka
         bindings:
-          paymentRequests:
+          ordersOut:
             producer:
               sync: true
+      bindings:
+        ordersIn: 
+          destination: orders
+        ordersOut: 
+          destination: orders
         
 server:
   port: 8080
@@ -38,5 +43,5 @@ eureka:
 logging:
 #   file: /var/memento/security.log
   level:
-    org.springframework.web: 'DEBUG'
-    com.netflix: 'ERROR'
+    org.springframework.web: ERROR
+    org.springframework.cloud: DEBUG
