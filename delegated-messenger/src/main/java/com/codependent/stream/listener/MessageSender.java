@@ -10,6 +10,7 @@ import org.springframework.cloud.stream.binder.MessageValues;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -44,9 +45,10 @@ public class MessageSender {
 	}
 	
 	private byte[] prepareMessage(Message msg) throws Exception{
-		org.springframework.messaging.Message<byte[]> message = MessageBuilder.withPayload(msg.getMessage().getBytes()).build();
+		org.springframework.messaging.Message<byte[]> message = MessageBuilder.withPayload(msg.getMessage().getBytes())
+				.setHeader(MessageHeaders.CONTENT_TYPE, "application/json").build();
 		MessageValues messageValues = new MessageValues(message);
-		byte[] fullPayload = converter.embedHeaders(messageValues, new String[0]);
+		byte[] fullPayload = converter.embedHeaders(messageValues, new String[]{MessageHeaders.CONTENT_TYPE});
 		return fullPayload;
 	}
 
