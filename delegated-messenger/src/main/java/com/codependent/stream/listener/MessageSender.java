@@ -1,12 +1,13 @@
 package com.codependent.stream.listener;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.stream.binder.EmbeddedHeadersMessageConverter;
+import org.springframework.cloud.stream.binder.MessageValues;
+import org.springframework.integration.support.MessageBuilder;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.scheduling.annotation.Async;
@@ -22,21 +23,31 @@ public class MessageSender {
 	private Logger logger = LoggerFactory.getLogger(getClass());
 	
 	@Autowired
-	private KafkaTemplate<Integer, String> kafkaTemplate;
+	private KafkaTemplate<Integer, byte[]> kafkaTemplate;
 	
 	@Autowired
 	private MessagingService messagingService;
 	
+	private EmbeddedHeadersMessageConverter converter = new EmbeddedHeadersMessageConverter();
+	
 	@SuppressWarnings("unused")
 	@Async
-	public void send(Message message, int timeout){
-		ListenableFuture<SendResult<Integer, String>> delivery = kafkaTemplate.send(message.getTopic(), message.getMessage());
+	public void send(Message msg, int timeout){
 		try {
-			logger.info("Sending message to topic {} - id {} - content {}", message.getTopic(), message.getId(), message.getMessage());
-			SendResult<Integer, String> result = delivery.get(timeout, TimeUnit.MILLISECONDS);
-			messagingService.removeMessage(message.getId());
-		} catch (InterruptedException | ExecutionException | TimeoutException e) {
-			logger.error("Error sending message to topic {} - id {} - content {} - error: {}", message.getTopic(), message.getId(), message.getMessage(), e);
+			ListenableFuture<SendResult<Integer, byte[]>> delivery = kafkaTemplate.send(msg.getTopic(), prepareMessage(msg));
+			logger.info("Sending message to topic {} - id {} - content {}", msg.getTopic(), msg.getId(), msg.getMessage());
+			SendResult<Integer, byte[]> result = delivery.get(timeout, TimeUnit.MILLISECONDS);
+			messagingService.removeMessage(msg.getId());
+		} catch (Exception e) {
+			logger.error("Error sending message to topic {} - id {} - content {} - error: {}", msg.getTopic(), msg.getId(), msg.getMessage(), e);
 		}
 	}
+	
+	private byte[] prepareMessage(Message msg) throws Exception{
+		org.springframework.messaging.Message<byte[]> message = MessageBuilder.withPayload(msg.getMessage().getBytes()).build();
+		MessageValues messageValues = new MessageValues(message);
+		byte[] fullPayload = converter.embedHeaders(messageValues, new String[0]);
+		return fullPayload;
+	}
+
 }
