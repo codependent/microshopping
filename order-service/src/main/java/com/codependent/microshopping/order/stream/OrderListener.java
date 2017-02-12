@@ -7,10 +7,10 @@ import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 
+import com.codependent.microshopping.order.dto.Order;
+import com.codependent.microshopping.order.dto.Order.State;
 import com.codependent.microshopping.order.service.OrderService;
 import com.codependent.microshopping.order.utils.OrikaObjectMapper;
-import com.codependent.microshopping.stream.dto.Order;
-import com.codependent.microshopping.stream.dto.Order.State;
 
 @Component
 public class OrderListener{
@@ -35,6 +35,11 @@ public class OrderListener{
 			order.setState(State.PENDING_SHIPPING);
 			orderService.updateOrder(mapper.map(order, com.codependent.microshopping.order.dto.Order.class));
 			orderProcessor.output().send(MessageBuilder.withPayload(mapper.map(order, com.codependent.microshopping.stream.dto.Order.class)).build(), 500);
+			break;
+		case CANCELLED_PAYMENT_FAILED:
+			logger.info("payment failed for order [{}] - Cancelling order", order);
+			order.setState(State.CANCELLED_PAYMENT_FAILED);
+			orderService.updateOrder(mapper.map(order, com.codependent.microshopping.order.dto.Order.class));
 			break;
 		case SHIPPED:
 			logger.info("received shipping information [{}]", order);

@@ -29,6 +29,7 @@ spring:
           destination: orders
         ordersOut: 
           destination: orders
+          content-type: application/json
         
 server:
   port: 8282
