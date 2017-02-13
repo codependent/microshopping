@@ -32,8 +32,14 @@ public class OrderListener{
 			order.setState(State.PENDING_SHIPPING);
 			orderService.updateOrder(order);
 			break;
-		case CANCELLED_PAYMENT_FAILED:
-			logger.info("payment failed for order [{}] - Cancelling order", order);
+		case PAYMENT_FAILED:
+			logger.info("payment failed for order [{}] - Cancelling product reservation", order);
+			order.setState(State.CANCEL_PRODUCT_RESERVATION);
+			orderService.updateOrder(order);
+			break;
+		case PRODUCT_RESERVATION_CANCELLED:
+			logger.info("product reservation cancelled for order [{}] - Cancelling order", order);
+			order.setState(State.CANCELLED_PAYMENT_FAILED);
 			orderService.updateOrder(order);
 			break;
 		case CANCELLED_NO_STOCK:

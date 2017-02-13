@@ -1,5 +1,6 @@
 package com.codependent.stream.listener;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -7,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.stream.binder.EmbeddedHeadersMessageConverter;
 import org.springframework.cloud.stream.binder.MessageValues;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
@@ -28,6 +30,9 @@ public class MessageSender {
 	
 	@Autowired
 	private MessagingService messagingService;
+
+	@Autowired
+	private MappingJackson2HttpMessageConverter jacksonConverter;
 	
 	private EmbeddedHeadersMessageConverter converter = new EmbeddedHeadersMessageConverter();
 	
@@ -44,11 +49,14 @@ public class MessageSender {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	private byte[] prepareMessage(Message msg) throws Exception{
+		Map<String, Object> map = jacksonConverter.getObjectMapper().readValue(msg.getMessage(), Map.class);
 		org.springframework.messaging.Message<byte[]> message = MessageBuilder.withPayload(msg.getMessage().getBytes())
-				.setHeader(MessageHeaders.CONTENT_TYPE, "application/json").build();
+				.setHeader(MessageHeaders.CONTENT_TYPE, "application/json")
+				.setHeader("idempotencyKey", map.get("id")+"-"+msg.getState()).build();
 		MessageValues messageValues = new MessageValues(message);
-		byte[] fullPayload = converter.embedHeaders(messageValues, new String[]{MessageHeaders.CONTENT_TYPE});
+		byte[] fullPayload = converter.embedHeaders(messageValues, new String[]{MessageHeaders.CONTENT_TYPE, "idempotencyKey"});
 		return fullPayload;
 	}
 

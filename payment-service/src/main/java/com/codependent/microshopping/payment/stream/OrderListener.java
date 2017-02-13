@@ -36,12 +36,12 @@ public class OrderListener {
 			orderSource.output().send(MessageBuilder.withPayload(order).build());
 		}else{
 			logger.info("Payment failed for order [{}], cancelling order", order);
-			order.setState(State.CANCELLED_PAYMENT_FAILED);
+			order.setState(State.PAYMENT_FAILED);
 			orderSource.output().send(MessageBuilder.withPayload(order).build());
 		}
 	}
 	
 	private boolean doPay(Order order){
-		return (Math.random() < 0.8);
+		return (Math.random() < 0.01);
 	}
 }

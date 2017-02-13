@@ -70,5 +70,7 @@ public class ProductServiceImpl implements ProductService{
 		ProductEntity productEntity = productDao.findOne( order.getProductId() );
 		productEntity.setStock(productEntity.getStock() +1 );
 		productDao.save(productEntity);
+		order.setState(State.PRODUCT_RESERVED);
+		messagingService.createPendingMessage("orders", order, order.getState().name());
 	}
 }
