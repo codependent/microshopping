@@ -4,13 +4,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.stream.annotation.StreamListener;
-import org.springframework.integration.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 
 import com.codependent.microshopping.order.dto.Order;
 import com.codependent.microshopping.order.dto.Order.State;
 import com.codependent.microshopping.order.service.OrderService;
-import com.codependent.microshopping.order.utils.OrikaObjectMapper;
 
 @Component
 public class OrderListener{
@@ -18,33 +16,34 @@ public class OrderListener{
 	private Logger logger = LoggerFactory.getLogger(getClass());
 
 	@Autowired
-	private OrderProcessor orderProcessor;
-	
-	@Autowired
-	private OrikaObjectMapper mapper;
-	
-	@Autowired
 	private OrderService orderService;
 	
 	@SuppressWarnings("incomplete-switch")
 	@StreamListener(OrderProcessor.INPUT)
 	public void handleOrder(Order order){
 		switch(order.getState()){
+		case PRODUCT_RESERVED:
+			logger.info("product reserved for order [{}] - asking for payment", order);
+			order.setState(State.PENDING_PAYMENT);
+			orderService.updateOrder(order);
+			break;
 		case PAYED:
 			logger.info("received payment information [{}] - saving state and requesting shipping", order);
 			order.setState(State.PENDING_SHIPPING);
-			orderService.updateOrder(mapper.map(order, com.codependent.microshopping.order.dto.Order.class));
-			orderProcessor.output().send(MessageBuilder.withPayload(mapper.map(order, com.codependent.microshopping.stream.dto.Order.class)).build(), 500);
+			orderService.updateOrder(order);
 			break;
 		case CANCELLED_PAYMENT_FAILED:
 			logger.info("payment failed for order [{}] - Cancelling order", order);
-			order.setState(State.CANCELLED_PAYMENT_FAILED);
-			orderService.updateOrder(mapper.map(order, com.codependent.microshopping.order.dto.Order.class));
+			orderService.updateOrder(order);
+			break;
+		case CANCELLED_NO_STOCK:
+			logger.info("no product stock for order [{}] - Cancelling order", order);
+			orderService.updateOrder(order);
 			break;
 		case SHIPPED:
 			logger.info("received shipping information [{}]", order);
 			order.setState(State.COMPLETED);
-			orderService.updateOrder(mapper.map(order, com.codependent.microshopping.order.dto.Order.class));
+			orderService.updateOrder(order);
 			break;
 		}
 	}

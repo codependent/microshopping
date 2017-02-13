@@ -1,4 +1,4 @@
-package com.codependent.microshopping.stock;
+package com.codependent.microshopping.product;
 
 import java.util.List;
 

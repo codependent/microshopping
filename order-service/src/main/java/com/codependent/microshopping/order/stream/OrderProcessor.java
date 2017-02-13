@@ -4,12 +4,11 @@ import org.springframework.cloud.stream.annotation.Input;
 import org.springframework.cloud.stream.annotation.Output;
 import org.springframework.messaging.MessageChannel;
 
-import com.codependent.microshopping.stream.Channel;
 
 public interface OrderProcessor{
 	
-	String OUTPUT = Channel.ORDERS_OUT;
-	String INPUT = Channel.ORDERS_IN;
+	final String OUTPUT = "ordersOut";
+	final String INPUT = "ordersIn";
 	
 	@Output(OrderProcessor.OUTPUT)
 	MessageChannel output();

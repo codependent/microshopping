@@ -12,6 +12,24 @@ spring:
         initialInterval: 2000
         maxInterval: 3000
         multiplier: 1.5
+    stream:
+      kafka:
+        binder:
+          brokers:
+          - kafka
+          zk-nodes:
+          - kafka
+        bindings:
+          ordersOut:
+            producer:
+              sync: true
+      bindings:
+        ordersIn:
+          group: product-service 
+          destination: orders
+        ordersOut: 
+          destination: orders
+          content-type: application/json
         
 server:
   port: 8686

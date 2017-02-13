@@ -1,4 +1,4 @@
-package com.codependent.microshopping.order.dto;
+package com.codependent.microshopping.product.dto;
 
 import java.io.Serializable;
 

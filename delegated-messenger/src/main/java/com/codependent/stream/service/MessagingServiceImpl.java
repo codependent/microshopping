@@ -23,11 +23,11 @@ public class MessagingServiceImpl implements MessagingService{
 	private MappingJackson2HttpMessageConverter jacksonConverter;
 	
 	@Override
-	public void createPendingMessage(String topic, Object message){
+	public void createPendingMessage(String topic, Object message, String state){
 		try {
 			String text = jacksonConverter.getObjectMapper().writeValueAsString(message);
 			Message messageEntity = new Message();
-			messageEntity.setState("PENDING_PAYMENT");
+			messageEntity.setState(state);
 			messageEntity.setTopic(topic);
 			messageEntity.setMessage(text);
 			messageDao.save(messageEntity);
@@ -36,8 +36,8 @@ public class MessagingServiceImpl implements MessagingService{
 		}
 	}
 	
-	public List<Message> getMessages(String state) {
-		return messageDao.findByState(state);
+	public List<Message> getPendingMessages() {
+		return messageDao.findAll();
 	}
 
 	@Override

@@ -1,4 +1,4 @@
-package com.codependent.microshopping.order;
+package com.codependent.microshopping.product;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -8,20 +8,20 @@ import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
-import com.codependent.microshopping.order.entity.OrderEntity;
-import com.codependent.microshopping.order.repository.OrderDao;
-import com.codependent.microshopping.order.stream.OrderProcessor;
+import com.codependent.microshopping.product.dao.ProductDao;
+import com.codependent.microshopping.product.entity.ProductEntity;
+import com.codependent.microshopping.product.stream.OrderProcessor;
 import com.codependent.stream.DelegatedMessagingConfig;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@EnableJpaRepositories(basePackageClasses=OrderDao.class)
-@EntityScan(basePackageClasses=OrderEntity.class)
+@EnableJpaRepositories(basePackageClasses=ProductDao.class)
+@EntityScan(basePackageClasses=ProductEntity.class)
 @EnableBinding(OrderProcessor.class)
 @Import(DelegatedMessagingConfig.class)
-public class OrderServiceApplication {
+public class ProductServiceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(OrderServiceApplication.class, args);
+		SpringApplication.run(ProductServiceApplication.class, args);
 	}
 }

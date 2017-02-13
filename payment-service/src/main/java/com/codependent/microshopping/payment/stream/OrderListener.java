@@ -7,8 +7,8 @@ import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 
-import com.codependent.microshopping.stream.dto.Order;
-import com.codependent.microshopping.stream.dto.Order.State;
+import com.codependent.microshopping.payment.dto.Order;
+import com.codependent.microshopping.payment.dto.Order.State;
 
 @Component
 public class OrderListener {

@@ -7,8 +7,8 @@ import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 
-import com.codependent.microshopping.stream.dto.Order;
-import com.codependent.microshopping.stream.dto.Order.State;
+import com.codependent.microshopping.shipping.dto.Order;
+import com.codependent.microshopping.shipping.dto.Order.State;
 
 @Component
 public class OrderListener {
@@ -24,16 +24,18 @@ public class OrderListener {
 		switch(order.getState()){
 		case PENDING_SHIPPING:
 			logger.info("received shipping request for order [{}]", order);
-			//TODO Ask for shipping
-			order.setState(State.SHIPPED);
+			requestShipping(order);
 			try{
+				order.setState(State.SHIPPED);
 				orderProcessor.output().send(MessageBuilder.withPayload(order).build(), 500);
 			}catch(Exception e){
 				logger.error("{}", e);
 			}
 			break;
 		}
-		
 	}
 	
+	public void requestShipping(Order order){
+		
+	}
 }
