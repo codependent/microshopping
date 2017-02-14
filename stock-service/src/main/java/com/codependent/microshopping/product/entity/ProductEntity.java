@@ -25,7 +25,7 @@ public class ProductEntity {
 	
 	private Integer stock;
 	
-	@OneToMany
+	@OneToMany(mappedBy="product")
 	private List<ReservationEntity> reservations = new ArrayList<>();
 
 	public Integer getId() {

@@ -25,7 +25,6 @@ public class MessagingServiceListener {
 	@Scheduled(fixedDelay=5000)
 	public void checkMessages(){
 		List<Message> pending = messagingService.getPendingMessages();
-		logger.info("Number of pending messages [{}]", pending.size());
 		logger.info("Pending messages [{}]", pending);
 		for (Message message : pending) {
 			messageSender.send(message, 500);
