@@ -45,5 +45,6 @@ eureka:
 logging:
 #   file: /var/memento/security.log
   level:
-    org.springframework.web: ERROR
-    org.springframework.cloud: DEBUG
+    org.springframework: ERROR
+    org.apache: ERROR
+    com.netflix: ERROR

@@ -9,5 +9,7 @@ import com.codependent.stream.entity.Message;
 public interface MessageDao extends JpaRepository<Message, Integer>{
 
 	List<Message> findByState(String state);
+
+	Message findByEntityId(Integer entityId);
 	
 }

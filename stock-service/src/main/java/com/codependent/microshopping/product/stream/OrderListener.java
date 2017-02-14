@@ -25,7 +25,7 @@ public class OrderListener{
 			logger.info("received stock check request for order [{}]", order);
 			productService.reserveProduct(order);
 			break;
-		case CANCELLED_PAYMENT_FAILED:
+		case CANCEL_PRODUCT_RESERVATION:
 			logger.info("payment failed for order [{}] - cancelling product reservation", order);
 			productService.cancelReservation(order);
 			break;

@@ -22,11 +22,11 @@ public class OrderListener {
 	@StreamListener(OrderProcessor.INPUT)
 	public void handle(Order order){
 		switch(order.getState()){
-		case PENDING_SHIPPING:
+		case REQUEST_SHIPPING:
 			logger.info("received shipping request for order [{}]", order);
 			requestShipping(order);
 			try{
-				order.setState(State.SHIPPED);
+				order.setState(State.SHIPPING_REQUESTED);
 				orderProcessor.output().send(MessageBuilder.withPayload(order).build(), 500);
 			}catch(Exception e){
 				logger.error("{}", e);

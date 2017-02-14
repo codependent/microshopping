@@ -5,16 +5,17 @@ import java.util.List;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.integration.support.MessageBuilder;
+import org.springframework.orm.hibernate5.HibernateOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
 import com.codependent.microshopping.product.dao.ProductDao;
+import com.codependent.microshopping.product.dao.ReservationDao;
 import com.codependent.microshopping.product.dto.Order;
 import com.codependent.microshopping.product.dto.Order.State;
 import com.codependent.microshopping.product.dto.Product;
 import com.codependent.microshopping.product.dto.SearchCriteria;
 import com.codependent.microshopping.product.entity.ProductEntity;
-import com.codependent.microshopping.product.stream.OrderProcessor;
+import com.codependent.microshopping.product.entity.ReservationEntity;
 import com.codependent.microshopping.product.utils.OrikaObjectMapper;
 import com.codependent.stream.service.MessagingService;
 
@@ -26,13 +27,13 @@ public class ProductServiceImpl implements ProductService{
 	private ProductDao productDao;
 	
 	@Autowired
+	private ReservationDao reservationDao;
+	
+	@Autowired
 	private MessagingService messagingService;
 
 	@Autowired
 	private OrikaObjectMapper mapper;
-	
-	@Autowired
-	private OrderProcessor orderProcessor;
 	
 	public Product getProduct(int id){
 		return mapper.map(productDao.findOne(id), Product.class);
@@ -45,30 +46,57 @@ public class ProductServiceImpl implements ProductService{
 		return mapper.map(productDao.findAll(), Product.class);
 	}
 	
-	/**
-	 * TODO add optimistic locking
-	 */
 	@Override
 	public void reserveProduct(Order order){
-		ProductEntity productEntity = productDao.findOne( order.getProductId() );
-		if( productEntity.getStock() > 0 ){
-			productEntity.setStock(productEntity.getStock()-1);
-			productDao.save(productEntity);
-			order.setState(State.PRODUCT_RESERVED);
-			messagingService.createPendingMessage("orders", order, order.getState().name());
-		}else{
-			order.setState(State.CANCELLED_NO_STOCK);
-			orderProcessor.output().send(MessageBuilder.withPayload(order).build());
+		ReservationEntity reservationEntity = reservationDao.findByOrderIdAndProductId(order.getId(), order.getProductId());
+		if(reservationEntity == null){
+			ProductEntity productEntity = productDao.findOne( order.getProductId() );
+			if( productEntity.getStock() <= 0 ){
+				order.setState(State.CANCELLED_NO_STOCK);
+			}else{
+				
+				reservationEntity = new ReservationEntity();
+				reservationEntity.setOrderId(order.getId());
+				reservationEntity.setProduct(productEntity);
+				reservationDao.save(reservationEntity);
+				boolean updateProduct = true;
+				while(updateProduct){
+					try{
+						if(productEntity.getStock()-1 >= 0){
+							productEntity.setStock(productEntity.getStock()-1);
+							productEntity.getReservations().add(reservationEntity);
+							productDao.save(productEntity);
+							order.setState(State.PRODUCT_RESERVED);
+						}else{
+							order.setState(State.CANCELLED_NO_STOCK);
+						}
+						updateProduct = false;
+					}catch (HibernateOptimisticLockingFailureException e) {
+						productEntity = productDao.findOne( order.getProductId() );
+					}
+				}
+			}
 		}
+		messagingService.createPendingMessage("orders", order.getId() , order.getState().name(), order, true);
 	}
 	
-	/**
-	 * TODO add optimistic locking
-	 */
 	@Override
 	public void cancelReservation(Order order){
-		ProductEntity productEntity = productDao.findOne( order.getProductId() );
-		productEntity.setStock(productEntity.getStock() +1 );
-		productDao.save(productEntity);
+		ReservationEntity reservationEntity = reservationDao.findByOrderIdAndProductId(order.getId(), order.getProductId());
+		if(reservationEntity != null){
+			reservationDao.delete(reservationEntity);
+			ProductEntity productEntity = productDao.findOne( order.getProductId() );
+			boolean updateProduct = true;
+			while(updateProduct){
+				try{
+					productEntity.setStock(productEntity.getStock() +1 );
+					productDao.save(productEntity);
+					updateProduct = false;
+				}catch (HibernateOptimisticLockingFailureException e) {
+					productEntity = productDao.findOne( order.getProductId() );
+				}
+			}
+		}
+		messagingService.createPendingMessage("orders", order.getId() , Order.State.PRODUCT_RESERVATION_CANCELLED.name(), order, true);
 	}
 }

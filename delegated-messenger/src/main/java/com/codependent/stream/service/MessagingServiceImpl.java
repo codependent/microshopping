@@ -4,6 +4,9 @@ import java.util.List;
 
 import javax.transaction.Transactional;
 
+import org.hibernate.exception.ConstraintViolationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
@@ -16,6 +19,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 @Transactional
 public class MessagingServiceImpl implements MessagingService{
 
+	private Logger logger = LoggerFactory.getLogger(getClass());
+	
 	@Autowired
 	private MessageDao messageDao;
 	
@@ -23,16 +28,23 @@ public class MessagingServiceImpl implements MessagingService{
 	private MappingJackson2HttpMessageConverter jacksonConverter;
 	
 	@Override
-	public void createPendingMessage(String topic, Object message, String state){
+	public void createPendingMessage(String topic, Integer entityId, String state, Object message, boolean removeAfterSending){
 		try {
+			logger.info("creating pending message - topic [{}], entityId [{}], state [{}], message [{}], removeAfterSending [{}]", 
+				topic, entityId, state, message, removeAfterSending);
 			String text = jacksonConverter.getObjectMapper().writeValueAsString(message);
 			Message messageEntity = new Message();
 			messageEntity.setState(state);
+			messageEntity.setEntityId(entityId);
 			messageEntity.setTopic(topic);
 			messageEntity.setMessage(text);
-			messageDao.save(messageEntity);
+			messageEntity.setRemoveAfterSending(removeAfterSending);
+			messageEntity = messageDao.save(messageEntity);
+			logger.info("created pending message [{}]", messageEntity); 
 		} catch (JsonProcessingException e) {
 			throw new RuntimeException(e);
+		} catch( ConstraintViolationException e){
+			
 		}
 	}
 	
@@ -41,8 +53,13 @@ public class MessagingServiceImpl implements MessagingService{
 	}
 
 	@Override
-	public void removeMessage(Integer id) {
-		messageDao.delete(id);
+	public void removeMessage(Integer entityId) {
+		Message message = messageDao.findByEntityId(entityId);
+		logger.info("removing message [{}]", message);
+		if(message != null){
+			messageDao.delete(message.getId());
+		}
+		
 	}
 
 }

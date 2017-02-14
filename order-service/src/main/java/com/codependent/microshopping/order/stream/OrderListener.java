@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import com.codependent.microshopping.order.dto.Order;
 import com.codependent.microshopping.order.dto.Order.State;
 import com.codependent.microshopping.order.service.OrderService;
+import com.codependent.stream.service.MessagingService;
 
 @Component
 public class OrderListener{
@@ -18,30 +19,45 @@ public class OrderListener{
 	@Autowired
 	private OrderService orderService;
 	
+	@Autowired
+	private MessagingService messagingService;
+	
 	@SuppressWarnings("incomplete-switch")
 	@StreamListener(OrderProcessor.INPUT)
 	public void handleOrder(Order order){
 		switch(order.getState()){
 		case PRODUCT_RESERVED:
 			logger.info("product reserved for order [{}] - asking for payment", order);
-			order.setState(State.PENDING_PAYMENT);
+			messagingService.removeMessage(order.getId());
+			order.setState(State.REQUEST_PAYMENT);
 			orderService.updateOrder(order);
 			break;
-		case PAYED:
+		case PAYMENT_SUCCESSFUL:
 			logger.info("received payment information [{}] - saving state and requesting shipping", order);
-			order.setState(State.PENDING_SHIPPING);
+			messagingService.removeMessage(order.getId());
+			order.setState(State.REQUEST_SHIPPING);
 			orderService.updateOrder(order);
 			break;
-		case CANCELLED_PAYMENT_FAILED:
-			logger.info("payment failed for order [{}] - Cancelling order", order);
+		case PAYMENT_FAILED:
+			logger.info("payment failed for order [{}] - Cancelling product reservation", order);
+			messagingService.removeMessage(order.getId());
+			order.setState(State.CANCEL_PRODUCT_RESERVATION);
+			orderService.updateOrder(order);
+			break;
+		case PRODUCT_RESERVATION_CANCELLED:
+			logger.info("product reservation cancelled for order [{}]", order);
+			messagingService.removeMessage(order.getId());
+			order.setState(State.CANCELLED_PAYMENT_FAILED);
 			orderService.updateOrder(order);
 			break;
 		case CANCELLED_NO_STOCK:
 			logger.info("no product stock for order [{}] - Cancelling order", order);
+			messagingService.removeMessage(order.getId());
 			orderService.updateOrder(order);
 			break;
-		case SHIPPED:
+		case SHIPPING_REQUESTED:
 			logger.info("received shipping information [{}]", order);
+			messagingService.removeMessage(order.getId());
 			order.setState(State.COMPLETED);
 			orderService.updateOrder(order);
 			break;

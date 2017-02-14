@@ -28,17 +28,21 @@ public class MessageSender {
 	
 	@Autowired
 	private MessagingService messagingService;
-	
+		
 	private EmbeddedHeadersMessageConverter converter = new EmbeddedHeadersMessageConverter();
 	
-	@SuppressWarnings("unused")
+	@SuppressWarnings({ "unused" })
 	@Async
 	public void send(Message msg, int timeout){
-		try {
+		try {			
 			ListenableFuture<SendResult<Integer, byte[]>> delivery = kafkaTemplate.send(msg.getTopic(), prepareMessage(msg));
 			logger.info("Sending message to topic {} - id {} - content {}", msg.getTopic(), msg.getId(), msg.getMessage());
 			SendResult<Integer, byte[]> result = delivery.get(timeout, TimeUnit.MILLISECONDS);
-			messagingService.removeMessage(msg.getId());
+			logger.info("remove message? [{}]", msg.isRemoveAfterSending());
+			if(msg.isRemoveAfterSending()){
+				logger.info("removing message [{}]", msg.getEntityId());
+				messagingService.removeMessage(msg.getEntityId());
+			}
 		} catch (Exception e) {
 			logger.error("Error sending message to topic {} - id {} - content {} - error: {}", msg.getTopic(), msg.getId(), msg.getMessage(), e);
 		}

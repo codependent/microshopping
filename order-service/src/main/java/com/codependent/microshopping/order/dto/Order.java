@@ -9,10 +9,13 @@ public class Order implements Serializable{
 	public enum State {
 		PENDING_PRODUCT_RESERVATION,
 		PRODUCT_RESERVED,
-		PENDING_PAYMENT, 
-		PAYED, 
-		PENDING_SHIPPING, 
-		SHIPPED, 
+		REQUEST_PAYMENT, 
+		PAYMENT_SUCCESSFUL,
+		PAYMENT_FAILED,
+		CANCEL_PRODUCT_RESERVATION,
+		PRODUCT_RESERVATION_CANCELLED,
+		REQUEST_SHIPPING, 
+		SHIPPING_REQUESTED, 
 		COMPLETED, 
 		CANCELLED_NO_STOCK,
 		CANCELLED_PAYMENT_FAILED, 
@@ -48,7 +51,9 @@ public class Order implements Serializable{
 	public void setUid(String uid) {
 		this.uid = uid;
 	}
-	
-	
+	@Override
+	public String toString() {
+		return "Order [id=" + id + ", productId=" + productId + ", uid=" + uid + ", state=" + state + "]";
+	}
 	
 }
