@@ -47,7 +47,7 @@ public class OrderServiceImpl implements OrderService{
 		}catch(Exception e){
 			logger.error("{}", e);
 		}*/
-		messagingService.createPendingMessage("orders", orderEntity.getId(), orderEntity.getState().name(), mapper.map(orderEntity, Order.class), false);
+		messagingService.createPendingMessage("orders", orderEntity.getId(), orderEntity.getState().name(), mapper.map(orderEntity, Order.class));
 		return mapper.map(orderEntity, Order.class);
 	}
 
@@ -73,7 +73,7 @@ public class OrderServiceImpl implements OrderService{
 		if(order.getState() != State.COMPLETED &&
 		   order.getState() != State.CANCELLED_NO_STOCK &&
 		   order.getState() != State.CANCELLED_PAYMENT_FAILED){
-			messagingService.createPendingMessage("orders", order.getId(), order.getState().name(), order, false);
+			messagingService.createPendingMessage("orders", order.getId(), order.getState().name(), order);
 		}
 		return mapper.map(oe, Order.class);
 	}

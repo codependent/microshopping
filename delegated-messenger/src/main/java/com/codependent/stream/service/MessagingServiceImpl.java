@@ -28,17 +28,16 @@ public class MessagingServiceImpl implements MessagingService{
 	private MappingJackson2HttpMessageConverter jacksonConverter;
 	
 	@Override
-	public void createPendingMessage(String topic, Integer entityId, String state, Object message, boolean removeAfterSending){
+	public void createPendingMessage(String topic, Integer entityId, String state, Object message){
 		try {
-			logger.info("creating pending message - topic [{}], entityId [{}], state [{}], message [{}], removeAfterSending [{}]", 
-				topic, entityId, state, message, removeAfterSending);
+			logger.info("creating pending message - topic [{}], entityId [{}], state [{}], message [{}]", 
+				topic, entityId, state, message);
 			String text = jacksonConverter.getObjectMapper().writeValueAsString(message);
 			Message messageEntity = new Message();
 			messageEntity.setState(state);
 			messageEntity.setEntityId(entityId);
 			messageEntity.setTopic(topic);
 			messageEntity.setMessage(text);
-			messageEntity.setRemoveAfterSending(removeAfterSending);
 			messageEntity = messageDao.save(messageEntity);
 			logger.info("created pending message [{}]", messageEntity); 
 		} catch (JsonProcessingException e) {

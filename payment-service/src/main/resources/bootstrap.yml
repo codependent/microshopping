@@ -27,6 +27,8 @@ spring:
         ordersIn: 
           group: payment-service
           destination: orders
+          consumer:
+            max-attempts: 5
         ordersOut: 
           destination: orders
           content-type: application/json

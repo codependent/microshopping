@@ -26,16 +26,6 @@ public class Message implements Serializable{
 	
 	private String message;
 	
-	private boolean removeAfterSending;
-	
-	public boolean isRemoveAfterSending() {
-		return removeAfterSending;
-	}
-
-	public void setRemoveAfterSending(boolean removeAfterSending) {
-		this.removeAfterSending = removeAfterSending;
-	}
-
 	public int getId() {
 		return id;
 	}
@@ -79,7 +69,7 @@ public class Message implements Serializable{
 	@Override
 	public String toString() {
 		return "Message [id=" + id + ", topic=" + topic + ", entityId=" + entityId + ", state=" + state + ", message="
-				+ message + ", removeAfterSending=" + removeAfterSending + "]";
+				+ message+ "]";
 	}
 	
 }
