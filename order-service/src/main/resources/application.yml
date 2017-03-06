@@ -1,4 +1,35 @@
-eureka:
-  client:
-    healthcheck:
-      enabled: true
+---
+spring:
+  application:
+    name: order-service
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers:
+          - kafka
+          zk-nodes:
+          - kafka
+        bindings:
+          ordersOut:
+            producer:
+              sync: true
+      bindings:
+        ordersIn:
+          group: order-service 
+          destination: orders
+          consumer:
+            max-attempts: 5
+        ordersOut: 
+          destination: orders
+          content-type: application/json
+        
+server:
+  port: 8080
+
+logging:
+#   file: /var/memento/security.log
+  level:
+    org.springframework: ERROR
+    org.apache: ERROR
+    com.netflix: ERROR

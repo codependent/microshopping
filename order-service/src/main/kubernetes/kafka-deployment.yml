@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: kafka
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      containers:
+      - name: kafka
+        image: spotify/kafka:latest
+        env:
+        - name: ADVERTISED_PORT
+          value: "9092"
+        ports:
+        - containerPort: 9092
+          name: kafka
+        - containerPort: 2181
+          name: zookeeper-port
