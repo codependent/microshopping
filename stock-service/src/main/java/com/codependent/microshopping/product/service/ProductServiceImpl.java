@@ -1,12 +1,15 @@
 package com.codependent.microshopping.product.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.transaction.Transactional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.integration.support.MessageBuilder;
 import org.springframework.orm.hibernate5.HibernateOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
@@ -18,8 +21,8 @@ import com.codependent.microshopping.product.dto.Product;
 import com.codependent.microshopping.product.dto.SearchCriteria;
 import com.codependent.microshopping.product.entity.ProductEntity;
 import com.codependent.microshopping.product.entity.ReservationEntity;
+import com.codependent.microshopping.product.stream.OrderProcessor;
 import com.codependent.microshopping.product.utils.OrikaObjectMapper;
-import com.codependent.stream.service.MessagingService;
 
 @Service
 @Transactional
@@ -34,8 +37,8 @@ public class ProductServiceImpl implements ProductService{
 	private ReservationDao reservationDao;
 	
 	@Autowired
-	private MessagingService messagingService;
-
+	private OrderProcessor orderProcessor;
+	
 	@Autowired
 	private OrikaObjectMapper mapper;
 	
@@ -82,9 +85,12 @@ public class ProductServiceImpl implements ProductService{
 				}
 			}
 		}else{
-			order.setState(State.PRODUCT_RESERVED);
+			Map<String, Object> event = new HashMap<>();
+			event.put("name", "OrderProductReserved");
+			event.put("productId", order.getProductId());
+			event.put("uid", order.getUid());
+			orderProcessor.output().send(MessageBuilder.withPayload(event).build(), 500);
 		}
-		messagingService.createPendingMessage("orders", order.getId() , order.getState().name(), order);
 	}
 	
 	@Override
@@ -108,6 +114,6 @@ public class ProductServiceImpl implements ProductService{
 			}
 		}
 		order.setState(Order.State.PRODUCT_RESERVATION_CANCELLED);
-		messagingService.createPendingMessage("orders", order.getId() , Order.State.PRODUCT_RESERVATION_CANCELLED.name(), order);
+		//messagingService.createPendingMessage("orders", order.getId() , Order.State.PRODUCT_RESERVATION_CANCELLED.name(), order);
 	}
 }

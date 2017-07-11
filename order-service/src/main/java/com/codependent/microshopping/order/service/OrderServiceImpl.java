@@ -1,21 +1,23 @@
 package com.codependent.microshopping.order.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.transaction.Transactional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.integration.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
 import com.codependent.microshopping.order.dto.Order;
 import com.codependent.microshopping.order.dto.Order.State;
 import com.codependent.microshopping.order.entity.OrderEntity;
 import com.codependent.microshopping.order.repository.OrderDao;
-import com.codependent.microshopping.order.stream.OrderProcessor;
+import com.codependent.microshopping.order.stream.OrderProducer;
 import com.codependent.microshopping.order.utils.OrikaObjectMapper;
-import com.codependent.stream.service.MessagingService;
 
 @Service
 @Transactional
@@ -28,10 +30,7 @@ public class OrderServiceImpl implements OrderService{
 	private OrderDao orderDao;
 	
 	@Autowired
-	private OrderProcessor orderProcessor;
-	
-	@Autowired
-	private MessagingService messagingService;
+	private OrderProducer orderProducer;
 	
 	@Autowired
 	private OrikaObjectMapper mapper;
@@ -39,15 +38,12 @@ public class OrderServiceImpl implements OrderService{
 	@Override
 	public Order createOrder(Order order) {
 		OrderEntity orderEntity = mapper.map(order, OrderEntity.class);
-		orderEntity.setState(State.PENDING_PRODUCT_RESERVATION);
-		orderEntity = orderDao.save(orderEntity);
-		/*
-		try{
-			orderProcessor.output().send(MessageBuilder.withPayload(mapper.map(orderEntity, com.codependent.microshopping.stream.dto.Order.class)).build(), 500);
-		}catch(Exception e){
-			logger.error("{}", e);
-		}*/
-		messagingService.createPendingMessage("orders", orderEntity.getId(), orderEntity.getState().name(), mapper.map(orderEntity, Order.class));
+		orderEntity.setState(State.PROCESSING);
+		Map<String, Object> event = new HashMap<>();
+		event.put("name", "OrderPlaced");
+		event.put("productId", order.getProductId());
+		event.put("uid", order.getUid());
+		orderProducer.output().send(MessageBuilder.withPayload(event).build(), 500);
 		return mapper.map(orderEntity, Order.class);
 	}
 
@@ -65,19 +61,4 @@ public class OrderServiceImpl implements OrderService{
 		return mapper.map(orderDao.findOne(id), Order.class);
 	}
 
-	@Override
-	public Order updateOrder(Order order) {
-		OrderEntity oe = orderDao.findOne(order.getId());
-		oe.setState(order.getState());
-		oe = orderDao.save(oe);
-		if(order.getState() != State.COMPLETED &&
-		   order.getState() != State.CANCELLED_NO_STOCK &&
-		   order.getState() != State.CANCELLED_PAYMENT_FAILED){
-			messagingService.createPendingMessage("orders", order.getId(), order.getState().name(), order);
-		}
-		return mapper.map(oe, Order.class);
-	}
-
-	
-	
 }

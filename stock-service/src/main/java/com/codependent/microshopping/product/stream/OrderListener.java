@@ -1,5 +1,7 @@
 package com.codependent.microshopping.product.stream;
 
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +19,18 @@ public class OrderListener{
 	@Autowired
 	private ProductService productService;
 	
-	@SuppressWarnings("incomplete-switch")
 	@StreamListener(OrderProcessor.INPUT)
-	public void handleOrder(Order order){
+	public void handleOrder(Map<String, Object> event){
+		logger.info("Event {}", event);
+		if("OrderPlaced".equals(event.get("name"))){
+			Order order = new Order();
+			order.setProductId((Integer)(event.get("productId")));
+			order.setUid(event.get("uid").toString());
+			productService.reserveProduct(order);
+		}else{
+			
+		}
+		/*
 		switch(order.getState()){
 		case PENDING_PRODUCT_RESERVATION:
 			logger.info("received stock check request for order [{}]", order);
@@ -30,6 +41,6 @@ public class OrderListener{
 			productService.cancelReservation(order);
 			break;
 		
-		}
+		}*/
 	}
 }

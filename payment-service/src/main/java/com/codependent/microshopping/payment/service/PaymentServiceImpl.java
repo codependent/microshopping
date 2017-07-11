@@ -14,7 +14,6 @@ import com.codependent.microshopping.payment.dto.Payment;
 import com.codependent.microshopping.payment.entity.PaymentEntity;
 import com.codependent.microshopping.payment.exception.PaymentGatewayException;
 import com.codependent.microshopping.payment.utils.OrikaObjectMapper;
-import com.codependent.stream.service.MessagingService;
 
 @Service
 @Transactional
@@ -24,9 +23,6 @@ public class PaymentServiceImpl implements PaymentService{
 	
 	@Autowired
 	private PaymentDao paymentDao;
-	
-	@Autowired
-	private MessagingService messagingService;
 	
 	@Autowired
 	private OrikaObjectMapper mapper;

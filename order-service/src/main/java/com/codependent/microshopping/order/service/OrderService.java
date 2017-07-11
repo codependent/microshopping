@@ -9,6 +9,5 @@ public interface OrderService {
 
 	Order createOrder(Order order);
 	Order getOrder(int id);
-	Order updateOrder(Order order);
 	List<Order> getAll(State state);
 }
