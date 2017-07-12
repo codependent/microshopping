@@ -26,12 +26,12 @@ spring:
       bindings:
         ordersIn:
           group: product-service 
-          destination: orders11
+          destination: orders
           consumer:
             max-attempts: 5
             header-mode: raw
         ordersOut: 
-          destination: orders11
+          destination: orders
           content-type: application/json
           producer:
             header-mode: raw
