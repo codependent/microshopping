@@ -51,7 +51,8 @@ public class KStreamsConfig {
         final Deserializer<JsonNode> jsonDeserializer = new JsonDeserializer();
         final Serde<JsonNode> jsonSerde = Serdes.serdeFrom(jsonSerializer, jsonDeserializer);
 		
-	    KStream<String, String> stream = kStreamBuilder.stream(null, stringSerde, stringSerde, STREAMING_TOPIC1);
+	    //KStream<String, String> stream = kStreamBuilder.stream(null, stringSerde, stringSerde, STREAMING_TOPIC1);
+	    KStream<Integer, JsonNode> stream = kStreamBuilder.stream(integerSerde, jsonSerde, STREAMING_TOPIC1);
 	    stream.print();
 	    return stream;
 	}
