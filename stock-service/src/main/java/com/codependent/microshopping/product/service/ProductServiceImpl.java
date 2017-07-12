@@ -1,5 +1,6 @@
 package com.codependent.microshopping.product.service;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,19 @@ public class ProductServiceImpl implements ProductService{
 	public Product getProduct(int id){
 		return mapper.map(productDao.findOne(id), Product.class);
 	}
+	
+	@Override
+	public Product addProduct(Product product){
+		Map<String, Object> event = new HashMap<>();
+		event.put("name", "ProductCreated");
+		event.put("productId", product.getId());
+		event.put("quantity", product.getStock());
+		event.put("dateAdded", new Date());
+		orderProcessor.output().send(MessageBuilder.withPayload(event).build(), 500);
+		return product;
+	}
+	
+	@Override
 	public List<Product> getProducts(){
 		return mapper.map(productDao.findAll(), Product.class);
 	}

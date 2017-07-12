@@ -8,6 +8,7 @@ import com.codependent.microshopping.product.dto.SearchCriteria;
 
 public interface ProductService {
 
+	Product addProduct(Product product);
 	Product getProduct(int id);
 	List<Product> getProducts();
 	List<Product> searchProducts(SearchCriteria criteria);
