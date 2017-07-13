@@ -47,7 +47,7 @@ public class ProductServiceImpl implements ProductService{
 	@Autowired
 	private OrikaObjectMapper mapper;
 	
-	//@Autowired
+	@Autowired
 	private KStreamBuilderFactoryBean kStreamBuilderFactoryBean;
 	
 	public Product getProduct(int id){
@@ -141,8 +141,8 @@ public class ProductServiceImpl implements ProductService{
 	@Override
 	public Long getProductStock(Integer id) {
 		KafkaStreams streams = kStreamBuilderFactoryBean.getKafkaStreams();
-		ReadOnlyKeyValueStore<String, Long> keyValueStore =
+		ReadOnlyKeyValueStore<Integer, Long> keyValueStore =
 	    streams.store("ProductStock", QueryableStoreTypes.keyValueStore());
-		return keyValueStore.get(id.toString());
+		return keyValueStore.get(id);
 	}
 }

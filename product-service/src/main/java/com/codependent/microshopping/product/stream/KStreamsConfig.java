@@ -14,9 +14,7 @@ import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.KGroupedStream;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
-import org.apache.kafka.streams.kstream.KTable;
 import org.apache.kafka.streams.processor.WallclockTimestampExtractor;
-import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.KafkaStreamsDefaultConfiguration;
@@ -42,7 +40,7 @@ public class KStreamsConfig {
     }
 	
 	@Bean
-	public FactoryBean<KStreamBuilder> myKStreamBuilder(StreamsConfig streamsConfig) {
+	public KStreamBuilderFactoryBean myKStreamBuilder(StreamsConfig streamsConfig) {
 	    return new KStreamBuilderFactoryBean(streamsConfig);
 	}
 	
