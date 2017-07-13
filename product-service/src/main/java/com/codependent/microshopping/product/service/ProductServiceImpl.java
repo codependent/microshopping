@@ -7,10 +7,14 @@ import java.util.Map;
 
 import javax.transaction.Transactional;
 
+import org.apache.kafka.streams.KafkaStreams;
+import org.apache.kafka.streams.state.QueryableStoreTypes;
+import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.support.MessageBuilder;
+import org.springframework.kafka.core.KStreamBuilderFactoryBean;
 import org.springframework.orm.hibernate5.HibernateOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
@@ -42,6 +46,9 @@ public class ProductServiceImpl implements ProductService{
 	
 	@Autowired
 	private OrikaObjectMapper mapper;
+	
+	//@Autowired
+	private KStreamBuilderFactoryBean kStreamBuilderFactoryBean;
 	
 	public Product getProduct(int id){
 		return mapper.map(productDao.findOne(id), Product.class);
@@ -129,5 +136,13 @@ public class ProductServiceImpl implements ProductService{
 		}
 		order.setState(Order.State.PRODUCT_RESERVATION_CANCELLED);
 		//messagingService.createPendingMessage("orders", order.getId() , Order.State.PRODUCT_RESERVATION_CANCELLED.name(), order);
+	}
+
+	@Override
+	public Long getProductStock(Integer id) {
+		KafkaStreams streams = kStreamBuilderFactoryBean.getKafkaStreams();
+		ReadOnlyKeyValueStore<String, Long> keyValueStore =
+	    streams.store("ProductStock", QueryableStoreTypes.keyValueStore());
+		return keyValueStore.get(id.toString());
 	}
 }
