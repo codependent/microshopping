@@ -14,6 +14,7 @@ import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.KGroupedStream;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
+import org.apache.kafka.streams.kstream.Reducer;
 import org.apache.kafka.streams.processor.WallclockTimestampExtractor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -54,10 +55,9 @@ public class KStreamsConfig {
 		
 	    KStream<Integer, JsonNode> stream = kStreamBuilder.stream(integerSerde, jsonSerde, STREAMING_TOPIC1);
 	    
-	    KGroupedStream<Integer, Integer> quantityStream = stream.map( (key, value) -> {
+	    stream.map( (key, value) -> {
 	    	return new KeyValue<>(value.get("productId").asInt(), value.get("quantity").asInt());
-	    }).groupByKey();
-	    quantityStream.count("ProductStock");
+	    }).groupByKey().reduce( (v1, v2) -> v1 + v2, "ProductsStock");
 	    
 	    stream.print();
 	    return stream;

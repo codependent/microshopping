@@ -14,5 +14,5 @@ public interface ProductService {
 	List<Product> searchProducts(SearchCriteria criteria);
 	void reserveProduct(Order order);
 	void cancelReservation(Order order);
-	Long getProductStock(Integer id);
+	Integer getProductStock(Integer id);
 }

@@ -139,10 +139,10 @@ public class ProductServiceImpl implements ProductService{
 	}
 
 	@Override
-	public Long getProductStock(Integer id) {
+	public Integer getProductStock(Integer id) {
 		KafkaStreams streams = kStreamBuilderFactoryBean.getKafkaStreams();
-		ReadOnlyKeyValueStore<Integer, Long> keyValueStore =
-	    streams.store("ProductStock", QueryableStoreTypes.keyValueStore());
+		ReadOnlyKeyValueStore<Integer, Integer> keyValueStore =
+	    streams.store("ProductsStock", QueryableStoreTypes.keyValueStore());
 		return keyValueStore.get(id);
 	}
 }

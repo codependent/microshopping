@@ -26,7 +26,7 @@ public class ProductsRestController {
 	}
 	
 	@GetMapping("/{id}/stock")
-	public Long getProductStock(@PathVariable Integer id){
+	public Integer getProductStock(@PathVariable Integer id){
 		return productService.getProductStock(id);
 	}
 	
