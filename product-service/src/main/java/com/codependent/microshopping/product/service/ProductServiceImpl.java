@@ -76,66 +76,29 @@ public class ProductServiceImpl implements ProductService{
 	
 	@Override
 	public void reserveProduct(Order order){
-		ReservationEntity reservationEntity = reservationDao.findByOrderIdAndProductId(order.getId(), order.getProductId());
-		if(reservationEntity == null){
-			logger.info("reservation entity [{}]", reservationEntity);
-			ProductEntity productEntity = productDao.findOne( order.getProductId() );
-			if( productEntity.getStock() <= 0 ){
-				order.setState(State.CANCELLED_NO_STOCK);
-			}else{
-				
-				reservationEntity = new ReservationEntity();
-				reservationEntity.setOrderId(order.getId());
-				reservationEntity.setProduct(productEntity);
-				reservationDao.save(reservationEntity);
-				boolean updateProduct = true;
-				while(updateProduct){
-					try{
-						if(productEntity.getStock()-1 >= 0){
-							productEntity.setStock(productEntity.getStock()-1);
-							productEntity.getReservations().add(reservationEntity);
-							productDao.save(productEntity);
-							order.setState(State.PRODUCT_RESERVED);
-						}else{
-							order.setState(State.CANCELLED_NO_STOCK);
-						}
-						updateProduct = false;
-					}catch (HibernateOptimisticLockingFailureException e) {
-						productEntity = productDao.findOne( order.getProductId() );
-					}
-				}
-			}
+		if(getProductStock(order.getProductId()) <= 0) {
+			Map<String, Object> event = new HashMap<>();
+			event.put("name", "OrderCancelledNoStock");
+			event.put("orderId", order.getId());
+			event.put("productId", order.getProductId());
+			orderProcessor.output().send(MessageBuilder.withPayload(event).build(), 500);
 		}else{
 			Map<String, Object> event = new HashMap<>();
-			event.put("name", "OrderProductReserved");
+			event.put("name", "ProductReserved");
+			event.put("orderId", order.getId());
 			event.put("productId", order.getProductId());
-			event.put("uid", order.getUid());
 			orderProcessor.output().send(MessageBuilder.withPayload(event).build(), 500);
 		}
 	}
 	
+	@Deprecated
 	@Override
 	public void cancelReservation(Order order){
-		ReservationEntity reservationEntity = reservationDao.findByOrderIdAndProductId(order.getId(), order.getProductId());
-		if(reservationEntity != null){
-			logger.info("cancelReservation () - reservation entity [{}]", reservationEntity);
-			reservationDao.delete(reservationEntity);
-			logger.info("cancelReservation () - reservation entity deleted");
-			ProductEntity productEntity = productDao.findOne( order.getProductId() );
-			boolean updateProduct = true;
-			while(updateProduct){
-				try{
-					logger.info("trying to update stock of the product");
-					productEntity.setStock(productEntity.getStock() +1 );
-					productDao.save(productEntity);
-					updateProduct = false;
-				}catch (HibernateOptimisticLockingFailureException e) {
-					productEntity = productDao.findOne( order.getProductId() );
-				}
-			}
-		}
-		order.setState(Order.State.PRODUCT_RESERVATION_CANCELLED);
-		//messagingService.createPendingMessage("orders", order.getId() , Order.State.PRODUCT_RESERVATION_CANCELLED.name(), order);
+		Map<String, Object> event = new HashMap<>();
+		event.put("name", "OrderCancelled");
+		event.put("orderId", order.getId());
+		event.put("productId", order.getProductId());
+		orderProcessor.output().send(MessageBuilder.withPayload(event).build(), 500);
 	}
 
 	@Override

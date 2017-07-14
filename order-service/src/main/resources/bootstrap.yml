@@ -29,9 +29,12 @@ spring:
           destination: orders
           consumer:
             max-attempts: 5
+            header-mode: raw
         ordersOut: 
           destination: orders
           content-type: application/json
+          producer:
+            header-mode: raw
         
 server:
   port: 8080

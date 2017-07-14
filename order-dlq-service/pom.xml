@@ -76,11 +76,6 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.codependent.stream</groupId>
-			<artifactId>delegated-messaging</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
-		</dependency>
 	</dependencies>
 
 	<dependencyManagement>

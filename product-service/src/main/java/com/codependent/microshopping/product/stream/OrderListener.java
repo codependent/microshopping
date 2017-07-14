@@ -24,6 +24,7 @@ public class OrderListener{
 		logger.info("Event {}", event);
 		if("OrderPlaced".equals(event.get("name"))){
 			Order order = new Order();
+			order.setId((String)event.get("orderId"));
 			order.setProductId((Integer)(event.get("productId")));
 			order.setUid(event.get("uid").toString());
 			productService.reserveProduct(order);

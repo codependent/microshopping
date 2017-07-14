@@ -3,6 +3,7 @@ package com.codependent.microshopping.order.service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.transaction.Transactional;
 
@@ -41,6 +42,7 @@ public class OrderServiceImpl implements OrderService{
 		orderEntity.setState(State.PROCESSING);
 		Map<String, Object> event = new HashMap<>();
 		event.put("name", "OrderPlaced");
+		event.put("orderId", UUID.randomUUID().toString());
 		event.put("productId", order.getProductId());
 		event.put("uid", order.getUid());
 		orderProducer.output().send(MessageBuilder.withPayload(event).build(), 500);
