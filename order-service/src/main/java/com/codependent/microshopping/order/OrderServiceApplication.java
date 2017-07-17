@@ -9,13 +9,13 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import com.codependent.microshopping.order.entity.OrderEntity;
 import com.codependent.microshopping.order.repository.OrderDao;
-import com.codependent.microshopping.order.stream.OrderProducer;
+import com.codependent.microshopping.order.stream.OrderProcessor;
 
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableJpaRepositories(basePackageClasses=OrderDao.class)
 @EntityScan(basePackageClasses=OrderEntity.class)
-@EnableBinding(OrderProducer.class)
+@EnableBinding(OrderProcessor.class)
 public class OrderServiceApplication {
 
 	public static void main(String[] args) {

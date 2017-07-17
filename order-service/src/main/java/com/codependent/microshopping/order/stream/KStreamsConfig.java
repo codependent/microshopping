@@ -1,4 +1,4 @@
-package com.codependent.microshopping.product.stream;
+package com.codependent.microshopping.order.stream;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.KafkaStreamsDefaultConfiguration;
 import org.springframework.kafka.core.KStreamBuilderFactoryBean;
 
+import com.codependent.microshopping.order.stream.utils.JsonSerde;
 import com.fasterxml.jackson.databind.JsonNode;
 
 @Configuration
@@ -30,9 +31,10 @@ public class KStreamsConfig {
     public StreamsConfig kStreamsConfigs() {
         Map<String, Object> props = new HashMap<>();
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        props.put(StreamsConfig.APPLICATION_ID_CONFIG, "product-service-streams");
-        props.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, Serdes.Integer().getClass().getName());
-        props.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, Serdes.Integer().getClass().getName());
+        props.put(StreamsConfig.APPLICATION_ID_CONFIG, "order-service-streams");
+        props.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
+        props.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, JsonSerde.class.getName());
+        //props.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, Serdes.Integer().getClass().getName());
         //props.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, Serdes.serdeFrom(jsonSerializer, jsonDeserializer).getClass().getName());
         props.put(StreamsConfig.TIMESTAMP_EXTRACTOR_CLASS_CONFIG, WallclockTimestampExtractor.class.getName());
         return new StreamsConfig(props);
@@ -46,16 +48,15 @@ public class KStreamsConfig {
 	@Bean
 	public KStream<?, ?> kStream(KStreamBuilder kStreamBuilder, KStreamBuilderFactoryBean kStreamBuilderFactoryBean) {
 
-		Serde<Integer> integerSerde = Serdes.Integer();
 		final Serializer<JsonNode> jsonSerializer = new JsonSerializer();
         final Deserializer<JsonNode> jsonDeserializer = new JsonDeserializer();
         final Serde<JsonNode> jsonSerde = Serdes.serdeFrom(jsonSerializer, jsonDeserializer);
 		
-	    KStream<Integer, JsonNode> stream = kStreamBuilder.stream(integerSerde, jsonSerde, STREAMING_TOPIC1);
-		    stream.filter( (key, value) -> value != null && value.get("name").asText().equals("ProductAdded"))
-		    .map( (key, value) -> {
-		    	return new KeyValue<>(value.get("productId").asInt(), value.get("quantity").asInt());
-		    }).groupByKey().reduce( (v1, v2) -> v1 + v2, "ProductsStock");
+        KStream<String, JsonNode> stream = kStreamBuilder.stream(Serdes.String(), jsonSerde, STREAMING_TOPIC1);
+	    stream.filter( (key, value) -> value != null && value.get("name").asText().startsWith("Order"))
+	    .map( (key, value) -> {
+	    	return new KeyValue<>(value.get("orderId").asText(), value);
+	    }).groupByKey().reduce( (val1, val2) -> val2, "OrdersStore");
 	    
 	    stream.print();
 	    return stream;

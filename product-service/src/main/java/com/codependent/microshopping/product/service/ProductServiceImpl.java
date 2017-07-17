@@ -15,17 +15,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.kafka.core.KStreamBuilderFactoryBean;
-import org.springframework.orm.hibernate5.HibernateOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
 import com.codependent.microshopping.product.dao.ProductDao;
 import com.codependent.microshopping.product.dao.ReservationDao;
 import com.codependent.microshopping.product.dto.Order;
-import com.codependent.microshopping.product.dto.Order.State;
 import com.codependent.microshopping.product.dto.Product;
 import com.codependent.microshopping.product.dto.SearchCriteria;
-import com.codependent.microshopping.product.entity.ProductEntity;
-import com.codependent.microshopping.product.entity.ReservationEntity;
 import com.codependent.microshopping.product.stream.OrderProcessor;
 import com.codependent.microshopping.product.utils.OrikaObjectMapper;
 
@@ -57,7 +53,7 @@ public class ProductServiceImpl implements ProductService{
 	@Override
 	public Product addProduct(Product product){
 		Map<String, Object> event = new HashMap<>();
-		event.put("name", "ProductCreated");
+		event.put("name", "ProductAdded");
 		event.put("productId", product.getId());
 		event.put("quantity", product.getStock());
 		event.put("dateAdded", new Date());
@@ -76,7 +72,8 @@ public class ProductServiceImpl implements ProductService{
 	
 	@Override
 	public void reserveProduct(Order order){
-		if(getProductStock(order.getProductId()) <= 0) {
+		Integer productStock = getProductStock(order.getProductId());
+		if(productStock == null || productStock <= 0) {
 			Map<String, Object> event = new HashMap<>();
 			event.put("name", "OrderCancelledNoStock");
 			event.put("orderId", order.getId());
