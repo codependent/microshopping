@@ -19,12 +19,13 @@ public class Message implements Serializable{
 	
 	private String topic;
 	
-	@Column(unique=true)
 	private Integer entityId;
 
 	private String state;
 	
 	private String message;
+	
+	private boolean processed;
 	
 	public int getId() {
 		return id;
@@ -65,11 +66,19 @@ public class Message implements Serializable{
 	public void setState(String state) {
 		this.state = state;
 	}
+	
+	public boolean isProcessed() {
+		return processed;
+	}
+
+	public void setProcessed(boolean processed) {
+		this.processed = processed;
+	}
 
 	@Override
 	public String toString() {
 		return "Message [id=" + id + ", topic=" + topic + ", entityId=" + entityId + ", state=" + state + ", message="
-				+ message+ "]";
+				+ message + ", processed=" + processed + "]";
 	}
 	
 }

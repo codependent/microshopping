@@ -9,6 +9,8 @@ import com.codependent.stream.entity.Message;
 public interface MessageDao extends JpaRepository<Message, Integer>{
 
 	List<Message> findByState(String state);
+	
+	List<Message> findByProcessed(boolean processed);
 
 	Message findByEntityId(Integer entityId);
 	

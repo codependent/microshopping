@@ -8,6 +8,6 @@ public interface MessagingService {
 
 	void createPendingMessage(String topic, Integer entityId, String state, Object message);
 	List<Message> getPendingMessages();
-	void removeMessage(Integer id);
+	void markMessageAsProcessed(Integer id);
 	
 }

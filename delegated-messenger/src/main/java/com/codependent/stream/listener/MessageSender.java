@@ -38,8 +38,7 @@ public class MessageSender {
 			ListenableFuture<SendResult<Integer, byte[]>> delivery = kafkaTemplate.send(msg.getTopic(), prepareMessage(msg));
 			logger.info("Sending message to topic {} - id {} - content {}", msg.getTopic(), msg.getId(), msg.getMessage());
 			SendResult<Integer, byte[]> result = delivery.get(timeout, TimeUnit.MILLISECONDS);
-			logger.info("removing message [{}]", msg.getEntityId());
-			messagingService.removeMessage(msg.getEntityId());
+			messagingService.markMessageAsProcessed(msg.getId());
 		} catch (Exception e) {
 			logger.error("Error sending message to topic {} - id {} - content {} - error: {}", msg.getTopic(), msg.getId(), msg.getMessage(), e);
 		}

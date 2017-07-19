@@ -38,6 +38,7 @@ public class MessagingServiceImpl implements MessagingService{
 			messageEntity.setEntityId(entityId);
 			messageEntity.setTopic(topic);
 			messageEntity.setMessage(text);
+			messageEntity.setProcessed(false);
 			messageEntity = messageDao.save(messageEntity);
 			logger.info("created pending message [{}]", messageEntity); 
 		} catch (JsonProcessingException e) {
@@ -48,15 +49,16 @@ public class MessagingServiceImpl implements MessagingService{
 	}
 	
 	public List<Message> getPendingMessages() {
-		return messageDao.findAll();
+		return messageDao.findByProcessed(false);
 	}
 
 	@Override
-	public void removeMessage(Integer entityId) {
-		Message message = messageDao.findByEntityId(entityId);
-		logger.info("removing message [{}]", message);
+	public void markMessageAsProcessed(Integer id) {
+		Message message = messageDao.findOne(id);
+		logger.info("marking message [{}] as processed", message);
 		if(message != null){
-			messageDao.delete(message.getId());
+			message.setProcessed(true);;
+			messageDao.save(message);
 		}
 		
 	}
