@@ -1,0 +1,51 @@
+---
+spring:
+  application:
+    name: stock-service
+  cloud:
+    config:
+      discovery:
+        enabled: true
+      failFast: true
+      retry:
+        maxAttempts: 100
+        initialInterval: 2000
+        maxInterval: 3000
+        multiplier: 1.5
+    stream:
+      kafka:
+        binder:
+          brokers:
+          - kafka
+          zk-nodes:
+          - kafka
+        bindings:
+          ordersOut:
+            producer:
+              sync: true
+      bindings:
+        ordersIn:
+          group: product-service 
+          destination: orders
+          consumer:
+            max-attempts: 5
+        ordersOut: 
+          destination: orders
+          content-type: application/json
+        
+server:
+  port: 8686
+
+eureka:
+  instance:
+    hostname: stock-service
+  client:
+    serviceUrl:
+      defaultZone: http://archimedes1:8761/eureka/
+  
+logging:
+#   file: /var/memento/security.log
+  level:
+    org.springframework: ERROR
+    org.apache: ERROR
+    com.netflix: ERROR
