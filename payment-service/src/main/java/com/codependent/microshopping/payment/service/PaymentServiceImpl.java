@@ -14,7 +14,7 @@ import com.codependent.microshopping.payment.dto.Payment;
 import com.codependent.microshopping.payment.entity.PaymentEntity;
 import com.codependent.microshopping.payment.exception.PaymentGatewayException;
 import com.codependent.microshopping.payment.utils.OrikaObjectMapper;
-import com.codependent.stream.service.MessagingService;
+import com.codependent.stream.kafka.MessagingService;
 
 @Service
 @Transactional

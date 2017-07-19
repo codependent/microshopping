@@ -19,7 +19,7 @@ import com.codependent.microshopping.product.dto.SearchCriteria;
 import com.codependent.microshopping.product.entity.ProductEntity;
 import com.codependent.microshopping.product.entity.ReservationEntity;
 import com.codependent.microshopping.product.utils.OrikaObjectMapper;
-import com.codependent.stream.service.MessagingService;
+import com.codependent.stream.kafka.MessagingService;
 
 @Service
 @Transactional

@@ -1,4 +1,4 @@
-package com.codependent.stream.listener;
+package com.codependent.stream.kafka;
 
 import java.util.concurrent.TimeUnit;
 
@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import com.codependent.stream.entity.Message;
-import com.codependent.stream.service.MessagingService;
 
 @Component
 public class MessageSender {
@@ -27,7 +26,7 @@ public class MessageSender {
 	private KafkaTemplate<Integer, byte[]> kafkaTemplate;
 	
 	@Autowired
-	private MessagingService messagingService;
+	private KafkaMessagingService messagingService;
 		
 	private EmbeddedHeadersMessageConverter converter = new EmbeddedHeadersMessageConverter();
 	

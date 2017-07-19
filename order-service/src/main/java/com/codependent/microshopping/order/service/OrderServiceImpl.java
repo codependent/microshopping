@@ -15,7 +15,7 @@ import com.codependent.microshopping.order.entity.OrderEntity;
 import com.codependent.microshopping.order.repository.OrderDao;
 import com.codependent.microshopping.order.stream.OrderProcessor;
 import com.codependent.microshopping.order.utils.OrikaObjectMapper;
-import com.codependent.stream.service.MessagingService;
+import com.codependent.stream.kafka.MessagingService;
 
 @Service
 @Transactional

@@ -1,4 +1,4 @@
-package com.codependent.stream.service;
+package com.codependent.stream.kafka;
 
 import java.util.List;
 
@@ -17,7 +17,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 @Service
 @Transactional
-public class MessagingServiceImpl implements MessagingService{
+public class KafkaMessagingService implements MessagingService{
 
 	private Logger logger = LoggerFactory.getLogger(getClass());
 	
@@ -48,12 +48,11 @@ public class MessagingServiceImpl implements MessagingService{
 		}
 	}
 	
-	public List<Message> getPendingMessages() {
+	List<Message> getPendingMessages() {
 		return messageDao.findByProcessed(false);
 	}
 
-	@Override
-	public void markMessageAsProcessed(Integer id) {
+	void markMessageAsProcessed(Integer id) {
 		Message message = messageDao.findOne(id);
 		logger.info("marking message [{}] as processed", message);
 		if(message != null){

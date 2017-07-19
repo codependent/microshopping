@@ -1,4 +1,4 @@
-package com.codependent.stream.listener;
+package com.codependent.stream.kafka;
 
 import java.util.List;
 
@@ -9,7 +9,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.codependent.stream.entity.Message;
-import com.codependent.stream.service.MessagingService;
 
 @Component
 public class MessagingServiceListener {
@@ -17,7 +16,7 @@ public class MessagingServiceListener {
 	private Logger logger = LoggerFactory.getLogger(getClass());
 	
 	@Autowired
-	private MessagingService messagingService;
+	private KafkaMessagingService messagingService;
 	
 	@Autowired
 	private MessageSender messageSender;
