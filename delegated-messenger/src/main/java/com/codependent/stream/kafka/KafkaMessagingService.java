@@ -28,7 +28,7 @@ public class KafkaMessagingService implements MessagingService{
 	private MappingJackson2HttpMessageConverter jacksonConverter;
 	
 	@Override
-	public void createPendingMessage(String topic, Integer entityId, String state, Object message){
+	public void createMessage(String topic, Integer entityId, String state, Object message){
 		try {
 			logger.info("creating pending message - topic [{}], entityId [{}], state [{}], message [{}]", 
 				topic, entityId, state, message);

@@ -49,7 +49,7 @@ public class PaymentServiceImpl implements PaymentService{
 		}else{
 			order.setState(State.PAYMENT_SUCCESSFUL);
 		}
-		messagingService.createPendingMessage("orders", order.getId(), order.getState().name(), order);
+		messagingService.createMessage("orders", order.getId(), order.getState().name(), order);
 		return mapper.map(paymentEntity, Payment.class); 
 	}
 	

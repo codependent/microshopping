@@ -84,7 +84,7 @@ public class ProductServiceImpl implements ProductService{
 		}else{
 			order.setState(State.PRODUCT_RESERVED);
 		}
-		messagingService.createPendingMessage("orders", order.getId() , order.getState().name(), order);
+		messagingService.createMessage("orders", order.getId() , order.getState().name(), order);
 	}
 	
 	@Override
@@ -108,6 +108,6 @@ public class ProductServiceImpl implements ProductService{
 			}
 		}
 		order.setState(Order.State.PRODUCT_RESERVATION_CANCELLED);
-		messagingService.createPendingMessage("orders", order.getId() , Order.State.PRODUCT_RESERVATION_CANCELLED.name(), order);
+		messagingService.createMessage("orders", order.getId() , Order.State.PRODUCT_RESERVATION_CANCELLED.name(), order);
 	}
 }
