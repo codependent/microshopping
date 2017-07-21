@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.stream.binder.EmbeddedHeadersMessageConverter;
 import org.springframework.cloud.stream.binder.MessageValues;
+import org.springframework.cloud.stream.binding.BinderAwareChannelResolver;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
@@ -23,6 +24,10 @@ public class MessageSender {
 	private Logger logger = LoggerFactory.getLogger(getClass());
 	
 	@Autowired
+	private BinderAwareChannelResolver channelResolver;
+
+	
+	@Autowired
 	private KafkaTemplate<Integer, byte[]> kafkaTemplate;
 	
 	@Autowired
@@ -32,11 +37,22 @@ public class MessageSender {
 	
 	@Async
 	@SuppressWarnings({ "unused" })
-	public void send(Message msg, int timeout){
+	public void sendKafkaTemplate(Message msg, int timeout){
 		try {			
 			ListenableFuture<SendResult<Integer, byte[]>> delivery = kafkaTemplate.send(msg.getTopic(), prepareMessage(msg));
 			logger.info("Sending message to topic {} - id {} - content {}", msg.getTopic(), msg.getId(), msg.getMessage());
 			SendResult<Integer, byte[]> result = delivery.get(timeout, TimeUnit.MILLISECONDS);
+			messagingService.markMessageAsProcessed(msg.getId());
+		} catch (Exception e) {
+			logger.error("Error sending message to topic {} - id {} - content {} - error: {}", msg.getTopic(), msg.getId(), msg.getMessage(), e);
+		}
+	}
+	
+	@Async
+	public void sendSource(Message msg, int timeout){
+		try {	
+			channelResolver.resolveDestination(msg.getTopic())
+				.send(MessageBuilder.withPayload(msg.getMessage()).build());
 			messagingService.markMessageAsProcessed(msg.getId());
 		} catch (Exception e) {
 			logger.error("Error sending message to topic {} - id {} - content {} - error: {}", msg.getTopic(), msg.getId(), msg.getMessage(), e);

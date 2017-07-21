@@ -7,6 +7,7 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.IntegerSerializer;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +22,7 @@ import com.codependent.stream.dao.MessageDao;
 import com.codependent.stream.entity.Message;
 
 @Configuration
+@EnableBinding
 @EnableScheduling
 @EnableAsync
 @EnableJpaRepositories(basePackageClasses=MessageDao.class)
