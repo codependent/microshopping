@@ -24,18 +24,22 @@ spring:
             producer:
               sync: true
       bindings:
-        ordersIn:
-          group: product-service 
-          destination: orders
-          consumer:
-            max-attempts: 5
-            header-mode: raw
-        ordersOut: 
-          destination: orders
+#        ordersIn:
+#          group: product-service 
+#          destination: orders
+#          consumer:
+#            max-attempts: 5
+#            header-mode: raw
+#        ordersOut: 
+#          destination: orders
+#          content-type: application/json
+#          producer:
+#            header-mode: raw
+        productsOut: 
+          destination: products
           content-type: application/json
           producer:
-            header-mode: raw
-        
+            header-mode: raw        
 server:
   port: 8686
 
@@ -50,5 +54,7 @@ logging:
 #   file: /var/memento/security.log
   level:
     org.springframework: ERROR
-    org.apache: ERROR
+    org.apache.kafka: DEBUG
+    org.springframework.stream: DEBUG
+    org.springframework.kafka: DEBUG
     com.netflix: ERROR

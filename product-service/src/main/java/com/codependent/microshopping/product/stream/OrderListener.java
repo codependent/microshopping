@@ -19,7 +19,7 @@ public class OrderListener{
 	@Autowired
 	private ProductService productService;
 	
-	@StreamListener(OrderProcessor.INPUT)
+	//@StreamListener(OrderProcessor.INPUT)
 	public void handleOrder(Map<String, Object> event){
 		logger.info("Event {}", event);
 		if("OrderPlaced".equals(event.get("name"))){

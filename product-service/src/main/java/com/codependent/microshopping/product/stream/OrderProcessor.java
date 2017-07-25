@@ -9,11 +9,11 @@ public interface OrderProcessor{
 	
 	final String OUTPUT = "ordersOut";
 	final String INPUT = "ordersIn";
-	
+	/*
 	@Output(OrderProcessor.OUTPUT)
-	MessageChannel output();
-	
+	MessageChannel output();*/
+	/*
 	@Input(OrderProcessor.INPUT)
-	MessageChannel input();
+	MessageChannel input();*/
 	
 }
