@@ -11,6 +11,7 @@ import javax.transaction.Transactional;
 
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.KeyValue;
+import org.apache.kafka.streams.errors.InvalidStateStoreException;
 import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.QueryableStoreTypes;
 import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
@@ -27,6 +28,7 @@ import com.codependent.microshopping.order.dto.Order;
 import com.codependent.microshopping.order.dto.Order.State;
 import com.codependent.microshopping.order.entity.OrderEntity;
 import com.codependent.microshopping.order.repository.OrderDao;
+import com.codependent.microshopping.order.stream.KStreamsConfig;
 import com.codependent.microshopping.order.stream.OrderProcessor;
 import com.codependent.microshopping.order.utils.OrikaObjectMapper;
 
@@ -60,6 +62,7 @@ public class OrderServiceImpl implements OrderService{
 		event.put("orderId", UUID.randomUUID().toString());
 		event.put("productId", order.getProductId());
 		event.put("uid", order.getUid());
+		event.put("state", Order.State.PENDING_PRODUCT_RESERVATION);
 		orderProducer.output().send(MessageBuilder
 				.withPayload(event)
 				.setHeader(KafkaHeaders.MESSAGE_KEY, ((String)event.get("orderId")).getBytes())
@@ -72,20 +75,22 @@ public class OrderServiceImpl implements OrderService{
 		List<Order> orders = new ArrayList<>();
 		
 		KafkaStreams streams = kStreamBuilderFactoryBean.getKafkaStreams();
-		ReadOnlyKeyValueStore<String, Map<String, String>> keyValueStore =
-	    streams.store("OrdersStore", QueryableStoreTypes.keyValueStore());
-		
-		if(state != null){
-			//TODO
-		}else{
-			KeyValueIterator<String, Map<String, String>> it = keyValueStore.all();
-			while(it.hasNext()){
-				KeyValue<String, Map<String, String>> next = it.next();
-				Order order = jackson2MessageConverter.getObjectMapper().convertValue(next.value, Order.class);
-				order.setId(next.key);
-				orders.add(order);
+		try{
+			ReadOnlyKeyValueStore<String, Map<String, String>> keyValueStore =
+		    streams.store(KStreamsConfig.ORDERS_STORE, QueryableStoreTypes.keyValueStore());
+			
+			if(state != null){
+				//TODO
+			}else{
+				KeyValueIterator<String, Map<String, String>> it = keyValueStore.all();
+				while(it.hasNext()){
+					KeyValue<String, Map<String, String>> next = it.next();
+					Order order = jackson2MessageConverter.getObjectMapper().convertValue(next.value, Order.class);
+					order.setId(next.key);
+					orders.add(order);
+				}
 			}
-		}
+		}catch(InvalidStateStoreException iese){}
 		return orders;
 	}
 

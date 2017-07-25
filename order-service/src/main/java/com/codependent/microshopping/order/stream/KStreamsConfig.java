@@ -3,16 +3,11 @@ package com.codependent.microshopping.order.stream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.kafka.common.serialization.Deserializer;
-import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.common.serialization.Serializer;
-import org.apache.kafka.connect.json.JsonDeserializer;
-import org.apache.kafka.connect.json.JsonSerializer;
-import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
+import org.apache.kafka.streams.kstream.KTable;
 import org.apache.kafka.streams.processor.WallclockTimestampExtractor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,7 +20,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 @Configuration
 public class KStreamsConfig {
 
-	private static final String STREAMING_TOPIC1 = "orders";
+	private static final String ORDERS_TOPIC = "orders";
+	public static final String ORDERS_STORE = "OrderStore";
 
 	@Bean(name = KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_CONFIG_BEAN_NAME)
     public StreamsConfig kStreamsConfigs() {
@@ -34,6 +30,7 @@ public class KStreamsConfig {
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, "order-service-streams");
         props.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
         props.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, JsonSerde.class.getName());
+        props.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 10);
         //props.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, Serdes.Integer().getClass().getName());
         //props.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, Serdes.serdeFrom(jsonSerializer, jsonDeserializer).getClass().getName());
         props.put(StreamsConfig.TIMESTAMP_EXTRACTOR_CLASS_CONFIG, WallclockTimestampExtractor.class.getName());
@@ -46,18 +43,15 @@ public class KStreamsConfig {
 	}
 	
 	@Bean
-	public KStream<?, ?> kStream(KStreamBuilder kStreamBuilder, KStreamBuilderFactoryBean kStreamBuilderFactoryBean) {
-
-		final Serializer<JsonNode> jsonSerializer = new JsonSerializer();
-        final Deserializer<JsonNode> jsonDeserializer = new JsonDeserializer();
-        final Serde<JsonNode> jsonSerde = Serdes.serdeFrom(jsonSerializer, jsonDeserializer);
-		
-        KStream<String, JsonNode> stream = kStreamBuilder.stream(Serdes.String(), jsonSerde, STREAMING_TOPIC1);
-	    stream.filter( (key, value) -> value != null && value.get("name").asText().startsWith("Order"))
-	    .groupByKey().reduce( (val1, val2) -> val2, "OrdersStore");
-	    
-	    stream.print();
-	    return stream;
+	public KTable<?, ?> kTable(KStreamBuilder kStreamBuilder, KStreamBuilderFactoryBean kStreamBuilderFactoryBean) {
+        KTable<String, JsonNode> table = kStreamBuilder.<String, JsonNode>table(ORDERS_TOPIC, ORDERS_STORE);
+        table.filter( (key, value) ->{
+        	System.out.println(key);
+        	System.out.println(value);
+        	return true;
+        });
+	    table.print();
+	    return table;
 	}
 	
 }
