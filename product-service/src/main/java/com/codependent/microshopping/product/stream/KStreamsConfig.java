@@ -3,12 +3,7 @@ package com.codependent.microshopping.product.stream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.kafka.common.serialization.Deserializer;
-import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.common.serialization.Serializer;
-import org.apache.kafka.connect.json.JsonDeserializer;
-import org.apache.kafka.connect.json.JsonSerializer;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.JoinWindows;
@@ -57,19 +52,13 @@ public class KStreamsConfig {
 	@Bean
 	@SuppressWarnings("unchecked")
 	public KStream<?, ?> kStream2(KStreamBuilder builder, KStreamBuilderFactoryBean kStreamBuilderFactoryBean) {
-		final Serde<Integer> integerSerde = Serdes.Integer();
-		final Serializer<JsonNode> jsonSerializer = new JsonSerializer();
-        final Deserializer<JsonNode> jsonDeserializer = new JsonDeserializer();
-        final Serde<JsonNode> jsonSerde = Serdes.serdeFrom(jsonSerializer, jsonDeserializer);
-		
-        
 		KStream<Integer, JsonNode> unvalidatedOrdersStream = builder.stream(ORDERS_TOPIC);
 		KStream<Integer, JsonNode> stockStream = builder.stream(PRODUCTS_TOPIC);
 		stockStream.print();
 
 		StateStoreSupplier<StateStore> productStore = Stores.create(PRODUCTS_STORE)
-			.withKeys(integerSerde)
-			.withValues(integerSerde)
+			.withKeys(Serdes.Integer())
+			.withValues(Serdes.Integer())
 			.persistent()
 			.build();
 		
@@ -103,6 +92,7 @@ public class KStreamsConfig {
 			this.context = context; 
 		}
 		
+		@SuppressWarnings("unchecked")
 		@Override
 		public KeyValue<Integer, JsonNode> transform(Integer key, JsonNode event) {
 			String eventName = event.get("name").asText();

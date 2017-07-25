@@ -20,11 +20,9 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.stereotype.Service;
 
 import com.codependent.microshopping.product.dao.ProductDao;
-import com.codependent.microshopping.product.dao.ReservationDao;
 import com.codependent.microshopping.product.dto.Order;
 import com.codependent.microshopping.product.dto.Product;
 import com.codependent.microshopping.product.dto.SearchCriteria;
-import com.codependent.microshopping.product.stream.OrderProcessor;
 import com.codependent.microshopping.product.stream.ProductSource;
 import com.codependent.microshopping.product.utils.OrikaObjectMapper;
 
@@ -36,9 +34,6 @@ public class ProductServiceImpl implements ProductService{
 	
 	@Autowired
 	private ProductDao productDao;
-	
-	@Autowired
-	private ReservationDao reservationDao;
 	
 	@Autowired
 	private ProductSource productSource;
