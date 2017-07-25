@@ -62,7 +62,7 @@ public class OrderServiceImpl implements OrderService{
 		event.put("uid", order.getUid());
 		orderProducer.output().send(MessageBuilder
 				.withPayload(event)
-				.setHeader(KafkaHeaders.MESSAGE_KEY, ByteBuffer.allocate(4).putInt(order.getProductId()).array())
+				.setHeader(KafkaHeaders.MESSAGE_KEY, ((String)event.get("orderId")).getBytes())
 				.build(), 500);
 		return order;
 	}

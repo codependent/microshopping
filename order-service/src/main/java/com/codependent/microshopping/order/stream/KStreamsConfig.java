@@ -54,9 +54,7 @@ public class KStreamsConfig {
 		
         KStream<String, JsonNode> stream = kStreamBuilder.stream(Serdes.String(), jsonSerde, STREAMING_TOPIC1);
 	    stream.filter( (key, value) -> value != null && value.get("name").asText().startsWith("Order"))
-	    .map( (key, value) -> {
-	    	return new KeyValue<>(value.get("orderId").asText(), value);
-	    }).groupByKey().reduce( (val1, val2) -> val2, "OrdersStore");
+	    .groupByKey().reduce( (val1, val2) -> val2, "OrdersStore");
 	    
 	    stream.print();
 	    return stream;

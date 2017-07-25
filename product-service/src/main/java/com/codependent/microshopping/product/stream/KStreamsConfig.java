@@ -51,7 +51,7 @@ public class KStreamsConfig {
 	
 	@Bean
 	@SuppressWarnings("unchecked")
-	public KStream<?, ?> kStream2(KStreamBuilder builder, KStreamBuilderFactoryBean kStreamBuilderFactoryBean) {
+	public KStream<?, ?> kStream(KStreamBuilder builder, KStreamBuilderFactoryBean kStreamBuilderFactoryBean) {
 		KStream<Integer, JsonNode> unvalidatedOrdersStream = builder.stream(ORDERS_TOPIC);
 		KStream<Integer, JsonNode> stockStream = builder.stream(PRODUCTS_TOPIC);
 		stockStream.print();
