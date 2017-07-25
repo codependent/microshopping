@@ -60,7 +60,10 @@ public class ProductServiceImpl implements ProductService{
 		event.put("productId", product.getId());
 		event.put("quantity", product.getStock());
 		event.put("dateAdded", new Date());
-		productSource.output().send(MessageBuilder.withPayload(event).setHeader(KafkaHeaders.MESSAGE_KEY, ByteBuffer.allocate(4).putInt(product.getId()).array()).build(), 500);
+		productSource.output().send(MessageBuilder
+				.withPayload(event)
+				.setHeader(KafkaHeaders.MESSAGE_KEY, ByteBuffer.allocate(4).putInt(product.getId()).array())
+				.build(), 500);
 		return product;
 	}
 	

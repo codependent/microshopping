@@ -1,5 +1,6 @@
 package com.codependent.microshopping.order.service;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.kafka.core.KStreamBuilderFactoryBean;
+import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.stereotype.Service;
 
 import com.codependent.microshopping.order.dto.Order;
@@ -52,15 +54,17 @@ public class OrderServiceImpl implements OrderService{
 	
 	@Override
 	public Order createOrder(Order order) {
-		OrderEntity orderEntity = mapper.map(order, OrderEntity.class);
-		orderEntity.setState(State.PROCESSING);
+		order.setState(State.PROCESSING);
 		Map<String, Object> event = new HashMap<>();
 		event.put("name", "OrderPlaced");
 		event.put("orderId", UUID.randomUUID().toString());
 		event.put("productId", order.getProductId());
 		event.put("uid", order.getUid());
-		orderProducer.output().send(MessageBuilder.withPayload(event).build(), 500);
-		return mapper.map(orderEntity, Order.class);
+		orderProducer.output().send(MessageBuilder
+				.withPayload(event)
+				.setHeader(KafkaHeaders.MESSAGE_KEY, ByteBuffer.allocate(4).putInt(order.getProductId()).array())
+				.build(), 500);
+		return order;
 	}
 
 	@Override
