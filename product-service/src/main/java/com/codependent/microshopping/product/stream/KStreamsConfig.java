@@ -32,7 +32,7 @@ public class KStreamsConfig {
 
 	private static final String ORDERS_TOPIC = "orders";
 	private static final String PRODUCTS_TOPIC = "products";
-	private static final String PRODUCTS_STORE = "ProductStore";
+	public static final String PRODUCTS_STORE = "ProductsStore";
 
 	@Bean(name = KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_CONFIG_BEAN_NAME)
     public StreamsConfig kStreamsConfigs() {
@@ -107,8 +107,8 @@ public class KStreamsConfig {
 				updateStockStore(event, store);
                 return KeyValue.pair(null, null);
 			} else if (eventName.equals("OrderPlaced")) {
-				Integer orderId = event.get("orderId").asInt();
-				responseEvent.put("orderId", event.get("orderId").asText());
+				Integer orderId = event.get("id").asInt();
+				responseEvent.put("id", event.get("id").asText());
 				if(validateInventory(event, store)){
 					responseEvent.put("name", "ProductReserved");
 					responseEvent.put("state", Order.State.PRODUCT_RESERVED.name());
@@ -118,7 +118,7 @@ public class KStreamsConfig {
 				}
 				
 				JsonNode jsonNode = mapper.convertValue(responseEvent, JsonNode.class);
-				return KeyValue.pair(event.get("orderId").asInt(), jsonNode);
+				return KeyValue.pair(event.get("id").asInt(), jsonNode);
 			} else {
 				return null;
 			}

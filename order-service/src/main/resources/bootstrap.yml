@@ -52,5 +52,5 @@ logging:
 #   file: /var/memento/security.log
   level:
     org.springframework.cloud.stream: INFO
-    org.apache.kafka: INFO
+    org.apache.kafka: ERROR
     com.netflix: ERROR

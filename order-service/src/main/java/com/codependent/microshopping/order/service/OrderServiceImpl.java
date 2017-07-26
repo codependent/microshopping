@@ -61,13 +61,13 @@ public class OrderServiceImpl implements OrderService{
 		order.setState(State.PROCESSING);
 		Map<String, Object> event = new HashMap<>();
 		event.put("name", "OrderPlaced");
-		event.put("orderId", nextOrderId++);
+		event.put("id", nextOrderId++);
 		event.put("productId", order.getProductId());
 		event.put("uid", order.getUid());
 		event.put("state", Order.State.PENDING_PRODUCT_RESERVATION);
 		orderProducer.output().send(MessageBuilder
 				.withPayload(event)
-				.setHeader(KafkaHeaders.MESSAGE_KEY, ByteBuffer.allocate(4).putInt((Integer)event.get("orderId")).array())
+				.setHeader(KafkaHeaders.MESSAGE_KEY, ByteBuffer.allocate(4).putInt((Integer)event.get("id")).array())
 				.build(), 500);
 		return order;
 	}
@@ -107,6 +107,20 @@ public class OrderServiceImpl implements OrderService{
 	    streams.store("OrdersStore", QueryableStoreTypes.keyValueStore());
 		Map<String, String> orderMap = keyValueStore.get(id);
 		return mapper.map(orderMap, Order.class);
+	}
+
+	@Override
+	public void requestPayment(Order order) {
+		Map<String, Object> event = new HashMap<>();
+		event.put("name", "PaymentRequested");
+		event.put("id", order.getId());
+		event.put("productId", order.getProductId());
+		event.put("uid", order.getUid());
+		event.put("state", order.getState().name());
+		orderProducer.output().send(MessageBuilder
+				.withPayload(event)
+				.setHeader(KafkaHeaders.MESSAGE_KEY, ByteBuffer.allocate(4).putInt((Integer)event.get("id")).array())
+				.build(), 500);
 	}
 
 }

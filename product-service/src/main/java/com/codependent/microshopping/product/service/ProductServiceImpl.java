@@ -23,6 +23,7 @@ import com.codependent.microshopping.product.dao.ProductDao;
 import com.codependent.microshopping.product.dto.Order;
 import com.codependent.microshopping.product.dto.Product;
 import com.codependent.microshopping.product.dto.SearchCriteria;
+import com.codependent.microshopping.product.stream.KStreamsConfig;
 import com.codependent.microshopping.product.stream.ProductSource;
 import com.codependent.microshopping.product.utils.OrikaObjectMapper;
 
@@ -77,14 +78,16 @@ public class ProductServiceImpl implements ProductService{
 		if(productStock == null || productStock <= 0) {
 			Map<String, Object> event = new HashMap<>();
 			event.put("name", "OrderCancelledNoStock");
-			event.put("orderId", order.getId());
+			event.put("id", order.getId());
 			event.put("productId", order.getProductId());
+			event.put("uid", order.getUid());
 			productSource.output().send(MessageBuilder.withPayload(event).build(), 500);
 		}else{
 			Map<String, Object> event = new HashMap<>();
 			event.put("name", "ProductReserved");
-			event.put("orderId", order.getId());
+			event.put("id", order.getId());
 			event.put("productId", order.getProductId());
+			event.put("uid", order.getUid());
 			productSource.output().send(MessageBuilder.withPayload(event).build(), 500);
 		}
 	}
@@ -94,7 +97,7 @@ public class ProductServiceImpl implements ProductService{
 	public void cancelReservation(Order order){
 		Map<String, Object> event = new HashMap<>();
 		event.put("name", "OrderCancelled");
-		event.put("orderId", order.getId());
+		event.put("id", order.getId());
 		event.put("productId", order.getProductId());
 		productSource.output().send(MessageBuilder.withPayload(event).build(), 500);
 	}
@@ -103,7 +106,7 @@ public class ProductServiceImpl implements ProductService{
 	public Integer getProductStock(Integer id) {
 		KafkaStreams streams = kStreamBuilderFactoryBean.getKafkaStreams();
 		ReadOnlyKeyValueStore<Integer, Integer> keyValueStore =
-	    streams.store("ProductStore", QueryableStoreTypes.keyValueStore());
+	    streams.store(KStreamsConfig.PRODUCTS_STORE, QueryableStoreTypes.keyValueStore());
 		Integer stock = keyValueStore.get(id);
 		return stock == null ? 0 : stock;
 	}

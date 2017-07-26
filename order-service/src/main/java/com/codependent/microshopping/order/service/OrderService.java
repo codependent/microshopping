@@ -10,4 +10,5 @@ public interface OrderService {
 	Order createOrder(Order order);
 	Order getOrder(int id);
 	List<Order> getAll(State state);
+	void requestPayment(Order order);
 }

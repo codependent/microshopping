@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public class KStreamsConfig {
 
 	private static final String ORDERS_TOPIC = "orders";
-	public static final String ORDERS_STORE = "OrderStore";
+	public static final String ORDERS_STORE = "OrdersStore";
 
 	@Autowired
 	private OrderProcessor orderProcessor;
@@ -56,18 +56,6 @@ public class KStreamsConfig {
         	return true;
         });
 	    table.print();
-	    /*
-	    KStream<Integer, JsonNode> orderStream = kStreamBuilder.<Integer, JsonNode>stream(ORDERS_TOPIC);
-	    orderStream.filter( (Integer key, JsonNode value) -> {
-	    	return value.get("name").equals("ProductReserved");
-	    })
-	    .mapValues( (JsonNode value) -> {
-	    	if(value.get("name").equals("ProductReserved")){
-	    		((ObjectNode)value).put("name", "OrderCompleted");
-	    	}
-	    	return value;
-	    }).to(ORDERS_TOPIC);
-	    */
 	    return table;
 	}
 	
