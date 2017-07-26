@@ -104,6 +104,7 @@ public class ProductServiceImpl implements ProductService{
 		KafkaStreams streams = kStreamBuilderFactoryBean.getKafkaStreams();
 		ReadOnlyKeyValueStore<Integer, Integer> keyValueStore =
 	    streams.store("ProductStore", QueryableStoreTypes.keyValueStore());
-		return keyValueStore.get(id);
+		Integer stock = keyValueStore.get(id);
+		return stock == null ? 0 : stock;
 	}
 }

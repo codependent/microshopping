@@ -55,6 +55,6 @@ logging:
   level:
     org.springframework: ERROR
     org.apache.kafka: DEBUG
-    org.springframework.stream: DEBUG
-    org.springframework.kafka: DEBUG
+    org.springframework.stream: INFO
+    org.springframework.kafka: INFO
     com.netflix: ERROR

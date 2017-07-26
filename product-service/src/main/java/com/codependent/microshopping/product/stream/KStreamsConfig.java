@@ -3,6 +3,7 @@ package com.codependent.microshopping.product.stream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsConfig;
@@ -21,6 +22,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.KafkaStreamsDefaultConfiguration;
 import org.springframework.kafka.core.KStreamBuilderFactoryBean;
 
+import com.codependent.microshopping.product.dto.Order;
 import com.codependent.microshopping.product.stream.utils.JsonSerde;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -103,14 +105,20 @@ public class KStreamsConfig {
 			if (eventName.equals("ProductAdded") || 
 				eventName.equals("ProductRemoved"))  {
 				updateStockStore(event, store);
-				responseEvent.put("name", "Nothing");
-				responseEvent.put("productId", productId.toString());
-				JsonNode jsonNode = mapper.convertValue(responseEvent, JsonNode.class);
-                return KeyValue.pair(key, jsonNode);
+                return KeyValue.pair(null, null);
 			} else if (eventName.equals("OrderPlaced")) {
-				responseEvent.put("name", validateInventory(event, store) ? "ProductReserved" : "ProductNoStock");
+				Integer orderId = event.get("orderId").asInt();
+				responseEvent.put("orderId", event.get("orderId").asText());
+				if(validateInventory(event, store)){
+					responseEvent.put("name", "ProductReserved");
+					responseEvent.put("state", Order.State.PRODUCT_RESERVED.name());
+				}else{
+					responseEvent.put("name", "ProductNoStock");
+					responseEvent.put("state", Order.State.PRODUCT_RESERVATION_CANCELLED.name());
+				}
+				
 				JsonNode jsonNode = mapper.convertValue(responseEvent, JsonNode.class);
-				return KeyValue.pair(key, jsonNode);
+				return KeyValue.pair(event.get("orderId").asInt(), jsonNode);
 			} else {
 				return null;
 			}

@@ -54,18 +54,20 @@ public class OrderServiceImpl implements OrderService{
 	@Autowired
 	private KStreamBuilderFactoryBean kStreamBuilderFactoryBean;
 	
+	private Integer nextOrderId = 1;
+	
 	@Override
 	public Order createOrder(Order order) {
 		order.setState(State.PROCESSING);
 		Map<String, Object> event = new HashMap<>();
 		event.put("name", "OrderPlaced");
-		event.put("orderId", UUID.randomUUID().toString());
+		event.put("orderId", nextOrderId++);
 		event.put("productId", order.getProductId());
 		event.put("uid", order.getUid());
 		event.put("state", Order.State.PENDING_PRODUCT_RESERVATION);
 		orderProducer.output().send(MessageBuilder
 				.withPayload(event)
-				.setHeader(KafkaHeaders.MESSAGE_KEY, ((String)event.get("orderId")).getBytes())
+				.setHeader(KafkaHeaders.MESSAGE_KEY, ByteBuffer.allocate(4).putInt((Integer)event.get("orderId")).array())
 				.build(), 500);
 		return order;
 	}
@@ -76,18 +78,22 @@ public class OrderServiceImpl implements OrderService{
 		
 		KafkaStreams streams = kStreamBuilderFactoryBean.getKafkaStreams();
 		try{
-			ReadOnlyKeyValueStore<String, Map<String, String>> keyValueStore =
+			ReadOnlyKeyValueStore<Integer, Map<String, String>> keyValueStore =
 		    streams.store(KStreamsConfig.ORDERS_STORE, QueryableStoreTypes.keyValueStore());
 			
 			if(state != null){
 				//TODO
 			}else{
-				KeyValueIterator<String, Map<String, String>> it = keyValueStore.all();
+				KeyValueIterator<Integer, Map<String, String>> it = keyValueStore.all();
 				while(it.hasNext()){
-					KeyValue<String, Map<String, String>> next = it.next();
-					Order order = jackson2MessageConverter.getObjectMapper().convertValue(next.value, Order.class);
-					order.setId(next.key);
-					orders.add(order);
+					try{
+						KeyValue<Integer, Map<String, String>> next = it.next();
+						Order order = jackson2MessageConverter.getObjectMapper().convertValue(next.value, Order.class);
+						order.setId(next.key);
+						orders.add(order);
+					}catch(Exception e){
+						
+					}
 				}
 			}
 		}catch(InvalidStateStoreException iese){}

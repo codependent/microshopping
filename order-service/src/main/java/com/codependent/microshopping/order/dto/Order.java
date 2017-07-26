@@ -23,7 +23,7 @@ public class Order implements Serializable{
 		CANCELLED_SERVICE_DOWN;
 	}
 	
-	private String id;
+	private Integer id;
 	private Integer productId;
 	private String uid; 
 	private State state;
@@ -34,10 +34,10 @@ public class Order implements Serializable{
 	public void setState(State state) {
 		this.state = state;
 	}
-	public String getId() {
+	public Integer getId() {
 		return id;
 	}
-	public void setId(String id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 	public Integer getProductId() {
