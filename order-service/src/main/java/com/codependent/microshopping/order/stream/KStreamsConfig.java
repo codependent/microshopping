@@ -35,7 +35,7 @@ public class KStreamsConfig {
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, "order-service-streams");
         props.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, Serdes.Integer().getClass().getName());
         props.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, JsonSerde.class.getName());
-        props.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 10);
+        //props.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 10);
         //props.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, Serdes.Integer().getClass().getName());
         //props.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, Serdes.serdeFrom(jsonSerializer, jsonDeserializer).getClass().getName());
         props.put(StreamsConfig.TIMESTAMP_EXTRACTOR_CLASS_CONFIG, WallclockTimestampExtractor.class.getName());
