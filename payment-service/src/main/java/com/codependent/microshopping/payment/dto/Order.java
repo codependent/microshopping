@@ -5,14 +5,16 @@ import java.io.Serializable;
 public class Order implements Serializable{
 
 	private static final long serialVersionUID = -861134353502544185L;
-
+	
 	public enum State {
+		PROCESSING,
 		PENDING_PRODUCT_RESERVATION,
 		PRODUCT_RESERVED,
 		REQUEST_PAYMENT, 
 		PAYMENT_SUCCESSFUL,
 		PAYMENT_FAILED,
 		CANCEL_PRODUCT_RESERVATION,
+		PRODUCT_RESERVATION_CANCELLED,
 		REQUEST_SHIPPING, 
 		SHIPPING_REQUESTED, 
 		COMPLETED, 
