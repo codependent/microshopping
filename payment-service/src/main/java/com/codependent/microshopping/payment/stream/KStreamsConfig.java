@@ -23,6 +23,7 @@ import org.springframework.kafka.annotation.KafkaStreamsDefaultConfiguration;
 import org.springframework.kafka.core.KStreamBuilderFactoryBean;
 
 import com.codependent.microshopping.payment.dto.Order;
+import com.codependent.microshopping.payment.stream.transformer.OrderPaymentTransformer;
 import com.codependent.microshopping.payment.stream.utils.JsonSerde;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,11 +53,10 @@ public class KStreamsConfig {
 	
 	@Bean
 	@SuppressWarnings("unchecked")
-	public KStream<?, ?> kStream(KStreamBuilder builder, KStreamBuilderFactoryBean kStreamBuilderFactoryBean) {
-		KStream<Integer, JsonNode> unvalidatedOrdersStream = builder.stream(ORDERS_TOPIC);
-		KStream<Integer, JsonNode> paymentStream = builder.stream(PAYMENTS_TOPIC);
+	public KStream<?, ?> kStream(KStreamBuilder builder, KStreamBuilderFactoryBean kStreamBuilderFactoryBean, OrderPaymentTransformer orderPaymentTransformer) {
+		KStream<Integer, JsonNode> orderPayments = builder.stream(ORDERS_TOPIC);
 
-		StateStoreSupplier<StateStore> paymentsStore = Stores.create(PAYMENTS_TOPIC)
+		StateStoreSupplier<StateStore> paymentsStore = Stores.create(PAYMENTS_STORE)
 			.withKeys(Serdes.Integer())
 			.withValues(Serdes.String())
 			.persistent()
@@ -64,95 +64,16 @@ public class KStreamsConfig {
 		
 		builder.addStateStore(paymentsStore);
 
-		KStream<Integer, JsonNode> orderOutputs = unvalidatedOrdersStream.outerJoin(paymentStream, 
-			(JsonNode value1, JsonNode value2) -> { 
-				if( value1 != null ){
-					return value1;
-				}else{
-					return value2;
-				}
-			}, JoinWindows.of(1000));
-		orderOutputs.<Integer, JsonNode>transform(() -> new StockCountTransformer(), PAYMENTS_STORE)
-		.filter((key, value) -> {
-			return value != null;
-		}).to(ORDERS_TOPIC);
+		orderPayments.<Integer, JsonNode>transform(() -> orderPaymentTransformer, PAYMENTS_STORE)
+		.to(ORDERS_TOPIC);
 		
-		return paymentStream;
+		return orderPayments;
     
 	}
 	
-	public static class StockCountTransformer implements Transformer<Integer, JsonNode, KeyValue<Integer, JsonNode>>{
-
-		private ObjectMapper mapper = new ObjectMapper();
-		
-		private ProcessorContext context;
-		
-		@Override
-		public void init(ProcessorContext context) {
-			this.context = context; 
-		}
-		
-		@SuppressWarnings("unchecked")
-		@Override
-		public KeyValue<Integer, JsonNode> transform(Integer key, JsonNode event) {
-			String eventName = event.get("name").asText();
-			Integer productId = event.get("productId").asInt();
-			Map<String, String> responseEvent = new HashMap<>();
-			KeyValueStore<Integer, Integer> store = (KeyValueStore<Integer, Integer>) context.getStateStore(PAYMENTS_STORE);
-			responseEvent.put("productId", productId.toString());
-			if (eventName.equals("ProductAdded") || 
-				eventName.equals("ProductRemoved"))  {
-				updateStockStore(event, store);
-                return KeyValue.pair(null, null);
-			} else if (eventName.equals("OrderPlaced")) {
-				Integer orderId = event.get("id").asInt();
-				responseEvent.put("id", event.get("id").asText());
-				if(validateInventory(event, store)){
-					responseEvent.put("name", "ProductReserved");
-					responseEvent.put("state", Order.State.PRODUCT_RESERVED.name());
-				}else{
-					responseEvent.put("name", "ProductNoStock");
-					responseEvent.put("state", Order.State.PRODUCT_RESERVATION_CANCELLED.name());
-				}
-				
-				JsonNode jsonNode = mapper.convertValue(responseEvent, JsonNode.class);
-				return KeyValue.pair(event.get("id").asInt(), jsonNode);
-			} else {
-				return null;
-			}
-		}
-
-		@Override
-		public KeyValue<Integer, JsonNode> punctuate(long timestamp) {
-			return null;
-		}
-
-		@Override
-		public void close() {
-			
-		}
-		
-		public int updateStockStore(JsonNode event, KeyValueStore<Integer, Integer> store){
-			Integer productId = event.get("productId").asInt();
-			Integer quantity = event.get("quantity").asInt();
-			Integer stock = store.get(productId);
-			Integer updatedStock = stock == null ? 0 : stock + quantity;
-			store.put(productId, updatedStock);
-			return updatedStock;
-		}
-		
-		public boolean validateInventory(JsonNode event, KeyValueStore<Integer, Integer> store){
-			Integer productId = event.get("productId").asInt();
-			Integer quantity = 1;
-			Integer stockCount = store.get(productId);
-			if (stockCount - quantity >= 0) {
-				//decrement the value in the store
-				store.put(productId, stockCount - quantity);
-				return true;
-			} else {
-		        return false;
-			}
-		}
+	@Bean
+	public OrderPaymentTransformer orderPaymentTransformer(){
+		return new OrderPaymentTransformer();
 	}
 
 }
